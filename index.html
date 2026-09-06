@@ -1,122 +1,657 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mithun Portfolio</title>
-    <link rel="stylesheet" href="css/main.css">
+    <title>Mithun | Portfolio 2026</title>
+    <!-- Google Fonts: Plus Jakarta Sans for UI & JetBrains Mono for Code/Tech -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-    <!-- 1. LOADING SCREEN -->
+
+    <!-- =========================================================================
+         1. INITIAL LOADING SCREEN (Walking Jane, 5s minimum, 120ms frame delay)
+         ========================================================================= -->
     <div id="loading-screen" class="fullscreen-overlay">
-        <div class="loading-container">
-            <h1 class="portfolio-title-loader">MITHUN PORTFOLIO</h1>
+        <div class="loader-backdrop-glow"></div>
+        <div class="loading-container glass-card">
+            <div class="loader-header">
+                <span class="badge-tag">INITIALIZING SYSTEM</span>
+                <h1 class="portfolio-title-loader">MITHUN PORTFOLIO</h1>
+            </div>
+            
             <div class="jane-loader-stage">
                 <img id="jane-walking" src="res/chibi_jane/walking/1.png" alt="Loading Jane" class="jane-sprite">
             </div>
+
             <div class="progress-container">
-                <div class="progress-bar-wrap">
-                    <div id="progress-bar" class="progress-bar"></div>
+                <div class="progress-info-row">
+                    <span class="loading-status-text">Preparing portfolio assets...</span>
+                    <span id="progress-text" class="progress-percentage">0%</span>
                 </div>
-                <div id="progress-text" class="progress-text">0%</div>
-                <div class="loading-text">Preparing...</div>
+                <div class="progress-track">
+                    <div id="progress-bar" class="progress-fill"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. WELCOME SCREEN -->
+    <!-- =========================================================================
+         2. WELCOME TRANSITION (Fast ~1.5s total)
+         ========================================================================= -->
     <div id="welcome-screen" class="fullscreen-overlay hidden">
-        <div class="welcome-container">
+        <div class="welcome-container glass-card">
             <div class="jane-welcome-stage">
                 <img id="jane-welcome" src="res/chibi_jane/welcome/1.png" alt="Welcome Jane" class="jane-sprite">
             </div>
-            <h2 id="welcome-text" class="welcome-text hidden-text">Welcome!</h2>
+            <div class="welcome-text-wrap">
+                <h2 id="welcome-text" class="welcome-english hidden-text">Welcome!</h2>
+            </div>
         </div>
     </div>
 
-    <!-- 3. MAIN PORTFOLIO -->
+    <!-- =========================================================================
+         FIXED SIDE ELEMENTS: BIKE (LEFT) & HANGING JANE (RIGHT)
+         ========================================================================= -->
+    <!-- 9 & 10. Left-Side Bike Jane (Scroll Progress Indicator) -->
+    <div class="bike-travel-lane" id="bike-lane" aria-hidden="true">
+        <div class="bike-route-line"></div>
+        <div class="bike-runner-wrap" id="bike-runner">
+            <img id="jane-bike" src="res/chibi_jane/bike_front/1.png" alt="Bike Jane Journey">
+            <div class="bike-speed-particles" id="bike-particles"></div>
+        </div>
+    </div>
+
+    <!-- 11. Right-Side Hanging Jane (Custom Viewport Scrollbar Indicator) -->
+    <div class="hanging-scrollbar-track" id="hanging-track" title="Drag or click to scroll">
+        <div class="hanging-rope"></div>
+        <div class="hanging-jane-carriage" id="clinging-carriage">
+            <img id="jane-clinging" src="res/chibi_jane/clinging/1.png" alt="Hanging Jane Scrollbar">
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         3. MAIN APPLICATION CONTENT
+         ========================================================================= -->
     <div id="main-content" class="hidden">
+        
+        <!-- Ambient background gradients -->
+        <div class="ambient-glow glow-1"></div>
+        <div class="ambient-glow glow-2"></div>
+
+        <!-- 4. HEADER & NAVIGATION -->
         <header id="site-header">
-            <div class="header-content">
-                <div class="header-logo">
-                    <img src="res/chibi_jane/header.png" alt="Header Jane" class="header-jane">
-                    <span class="logo-text">MITHUN PORTFOLIO</span>
-                </div>
-                <div class="theme-toggle" id="theme-toggle">
-                    <img src="res/chibi_jane/day.png" alt="Theme Jane" id="theme-jane">
-                    <span class="theme-icons">☀ &mdash; 🌙</span>
+            <div class="header-inner">
+                <a href="#home" class="header-brand">
+                    <div class="header-jane-wrap">
+                        <img src="res/chibi_jane/header.png" alt="Jane" class="header-jane">
+                    </div>
+                    <span class="brand-name">MITHUN PORTFOLIO</span>
+                </a>
+
+                <!-- 6. Main Navigation Items ONLY: HOME, PROJECTS, CHAT, RESUME -->
+                <nav class="main-nav">
+                    <a href="#home" class="nav-link active">HOME</a>
+                    <a href="#projects" class="nav-link">PROJECTS</a>
+                    <button type="button" class="nav-link nav-btn" id="nav-chat-btn">CHAT</button>
+                    <a href="#resume" class="nav-link">RESUME</a>
+                </nav>
+
+                <!-- 5. THEME TOGGLE (Day / Night with Jane illustration) -->
+                <div class="theme-toggle-container">
+                    <div class="theme-jane-preview">
+                        <img src="res/chibi_jane/night.png" alt="Theme Jane" id="theme-jane">
+                    </div>
+                    <button id="theme-toggle-btn" class="theme-pill-btn" aria-label="Toggle light and dark theme">
+                        <span class="pill-slider">
+                            <span class="pill-icon sun-icon">☀️</span>
+                            <span class="pill-icon moon-icon">🌙</span>
+                        </span>
+                    </button>
                 </div>
             </div>
-            <nav class="main-nav">
-                <a href="#home">HOME</a>
-                <a href="#projects">PROJECTS</a>
-                <a id="nav-chat-btn" href="#chat">CHAT</a>
-                <a href="#resume">RESUME</a>
-            </nav>
         </header>
 
-        <main class="content-wrapper">
-            <!-- Left Side: Bike Jane (Scroll Progress) -->
-            <aside class="scroll-progress-left">
-                <img id="jane-bike" src="res/chibi_jane/bike_back/1.png" alt="Bike Jane">
-            </aside>
+        <!-- Main Body Wrapper -->
+        <div class="portfolio-container">
+            <div class="content-column">
 
-            <!-- Center: Page Content -->
-            <div class="page-content">
-                <section id="home" class="hero-section">
-                    <div class="hero-content">
-                        <h2>HELLO 👋</h2>
-                        <h1>I'M MITHUN</h1>
-                        <p class="subtitle">Computer Science Student</p>
-                        <p class="roles">Developer &bull; Builder &bull; Learner</p>
-                        <div class="social-links">
-                            <a href="#" class="btn">[ GitHub ]</a>
-                            <a href="#" class="btn">[ LinkedIn ]</a>
-                            <a href="#" class="btn">[ Email ]</a>
+                <!-- 8. HERO SECTION -->
+                <section id="home" class="section hero-section">
+                    <div class="hero-badge">
+                        <span class="status-dot"></span> Available for Projects & Engineering Roles 2026
+                    </div>
+                    
+                    <h2 class="hero-greeting">HELLO 👋</h2>
+                    <h1 class="hero-title">I'M <span class="gradient-text">MITHUN</span></h1>
+                    
+                    <p class="hero-role-title">Computer Science & Engineering Student</p>
+                    <p class="hero-subtitle">Developer &bull; Builder &bull; Learner</p>
+                    
+                    <div class="hero-action-buttons">
+                        <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline">
+                            <span class="btn-icon">⚡</span> GitHub
+                        </a>
+                        <a href="https://linkedin.com" target="_blank" rel="noopener" class="btn btn-outline">
+                            <span class="btn-icon">🔗</span> LinkedIn
+                        </a>
+                        <a href="mailto:contact@mithun.dev" class="btn btn-outline">
+                            <span class="btn-icon">✉️</span> Email
+                        </a>
+                        <button type="button" class="btn btn-primary open-chat-trigger">
+                            <span class="btn-icon">💬</span> Message Mithun
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 12. ABOUT SECTION -->
+                <section id="about" class="section">
+                    <div class="section-header">
+                        <span class="section-tag">// 01. OVERVIEW</span>
+                        <h2 class="section-title">ABOUT ME</h2>
+                    </div>
+                    <div class="glass-panel about-card">
+                        <div class="about-text-content">
+                            <p class="lead-text">
+                                Hello! I'm Mithun, a passionate Computer Science student and software engineer who thrives at the intersection of robust backend architectures, distributed systems, and modern, delightful user interfaces.
+                            </p>
+                            <p>
+                                I spend my time designing scalable services, tackling challenging algorithmic problems on LeetCode, and developing intelligent automation agents. Always curious, constantly building, and continuously leveling up my engineering toolkit.
+                            </p>
+                            <div class="quick-stats-grid">
+                                <div class="stat-box">
+                                    <span class="stat-number">680+</span>
+                                    <span class="stat-label">LeetCode Solved</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-number">15+</span>
+                                    <span class="stat-label">Projects Built</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-number">2026</span>
+                                    <span class="stat-label">Graduation Year</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
-                
-                <!-- More sections will be built here based on the blueprint -->
-                <section id="about" class="placeholder-section">
-                    <h2>ABOUT ME</h2>
-                    <p>Short introduction about Mithun...</p>
-                    <p>Scroll down to see the bike animation in action.</p>
-                    <br><br><br><br><br><br><br><br><br><br><br><br>
+
+                <!-- 13. EDUCATION SECTION (with edu.png) -->
+                <section id="education" class="section">
+                    <div class="section-header">
+                        <span class="section-tag">// 02. ACADEMICS</span>
+                        <h2 class="section-title">EDUCATION</h2>
+                    </div>
+                    <div class="glass-panel edu-card">
+                        <div class="edu-jane-col">
+                            <img src="res/chibi_jane/edu.png" alt="Education Jane" class="section-jane-img">
+                        </div>
+                        <div class="edu-details-col">
+                            <div class="edu-degree-header">
+                                <span class="edu-timeline">2022 — 2026</span>
+                                <h3>B.E. Computer Science & Engineering</h3>
+                                <h4 class="edu-institution">Chennai Institute of Technology</h4>
+                            </div>
+                            <p class="edu-desc">
+                                Rigorous coursework covering Data Structures & Algorithms, Operating Systems, Database Management Systems, Computer Networks, Distributed Computing, and Artificial Intelligence.
+                            </p>
+                            <div class="edu-tags">
+                                <span class="tech-chip">Algorithms</span>
+                                <span class="tech-chip">System Design</span>
+                                <span class="tech-chip">DBMS</span>
+                                <span class="tech-chip">Computer Architecture</span>
+                            </div>
+                        </div>
+                    </div>
                 </section>
-                <section id="education" class="placeholder-section">
-                    <h2>EDUCATION</h2>
-                    <img src="res/chibi_jane/edu.png" alt="Education Jane" width="200">
-                    <br><br><br><br><br><br><br><br><br><br><br><br>
+
+                <!-- 14. SKILLS SECTION (with skill.png) -->
+                <section id="skills" class="section">
+                    <div class="section-header">
+                        <span class="section-tag">// 03. TOOLKIT</span>
+                        <h2 class="section-title">TECHNICAL SKILLS</h2>
+                    </div>
+                    <div class="skills-layout-wrapper">
+                        <div class="skills-jane-side">
+                            <img src="res/chibi_jane/skill.png" alt="Skills Jane" class="section-jane-img">
+                        </div>
+                        <div class="skills-groups-side">
+                            
+                            <div class="skill-group-card glass-panel">
+                                <h4 class="skill-category-title">Programming Languages</h4>
+                                <div class="chips-flex">
+                                    <span class="skill-pill">Python</span>
+                                    <span class="skill-pill">C</span>
+                                    <span class="skill-pill">C++</span>
+                                    <span class="skill-pill">Java</span>
+                                    <span class="skill-pill">JavaScript</span>
+                                    <span class="skill-pill">TypeScript</span>
+                                </div>
+                            </div>
+
+                            <div class="skill-group-card glass-panel">
+                                <h4 class="skill-category-title">Web & Backend Frameworks</h4>
+                                <div class="chips-flex">
+                                    <span class="skill-pill">FastAPI</span>
+                                    <span class="skill-pill">Flask</span>
+                                    <span class="skill-pill">Django</span>
+                                    <span class="skill-pill">React</span>
+                                    <span class="skill-pill">Node.js</span>
+                                    <span class="skill-pill">HTML5 / CSS3</span>
+                                </div>
+                            </div>
+
+                            <div class="skill-group-card glass-panel">
+                                <h4 class="skill-category-title">Databases & Caching</h4>
+                                <div class="chips-flex">
+                                    <span class="skill-pill">PostgreSQL</span>
+                                    <span class="skill-pill">MySQL</span>
+                                    <span class="skill-pill">MongoDB</span>
+                                    <span class="skill-pill">Redis</span>
+                                </div>
+                            </div>
+
+                            <div class="skill-group-card glass-panel">
+                                <h4 class="skill-category-title">DevOps & Tooling</h4>
+                                <div class="chips-flex">
+                                    <span class="skill-pill">Git & GitHub</span>
+                                    <span class="skill-pill">Docker</span>
+                                    <span class="skill-pill">Linux</span>
+                                    <span class="skill-pill">Postman</span>
+                                    <span class="skill-pill">Vercel / Cloud</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
                 </section>
-                <section id="skills" class="placeholder-section">
-                    <h2>SKILLS</h2>
-                    <img src="res/chibi_jane/skill.png" alt="Skills Jane" width="200">
-                    <br><br><br><br><br><br><br><br><br><br><br><br>
+
+                <!-- 15. WORK / CURRENT ACTIVITY (with work.png) -->
+                <section id="work" class="section">
+                    <div class="section-header">
+                        <span class="section-tag">// 04. ACTIVE FOCUS</span>
+                        <h2 class="section-title">CURRENT ACTIVITY</h2>
+                    </div>
+                    <div class="glass-panel work-panel">
+                        <div class="work-content-left">
+                            <div class="focus-item">
+                                <div class="focus-icon-wrap">⚡</div>
+                                <div>
+                                    <h4>Currently Building</h4>
+                                    <p>Intelligent agentic automation systems with FastAPI, Telegram bot orchestration, and reactive frontend event systems.</p>
+                                </div>
+                            </div>
+                            <div class="focus-item">
+                                <div class="focus-icon-wrap">🧠</div>
+                                <div>
+                                    <h4>Currently Learning</h4>
+                                    <p>Deepening understanding of distributed system fault tolerance, high-throughput message queues, and WebSockets at scale.</p>
+                                </div>
+                            </div>
+                            <div class="focus-item">
+                                <div class="focus-icon-wrap">🎯</div>
+                                <div>
+                                    <h4>Current Focus</h4>
+                                    <p>Competitive programming optimizations, LeetCode daily streaks, and preparing for top-tier software engineering roles.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="work-jane-right">
+                            <img src="res/chibi_jane/work.png" alt="Work Jane" class="section-jane-img">
+                        </div>
+                    </div>
                 </section>
+
+                <!-- 16. ACHIEVEMENTS SECTION -->
+                <section id="achievements" class="section">
+                    <div class="section-header">
+                        <span class="section-tag">// 05. MILESTONES</span>
+                        <h2 class="section-title">ACHIEVEMENTS</h2>
+                    </div>
+                    <div class="achievements-grid">
+                        <div class="achievement-card glass-panel">
+                            <div class="achievement-header">
+                                <span class="achieve-badge">LEETCODE</span>
+                                <span class="achieve-icon">🏆</span>
+                            </div>
+                            <div class="achieve-value">680+</div>
+                            <div class="achieve-title">Data Structures & Algorithms</div>
+                            <p class="achieve-desc">Proficient in Binary Trees, Dynamic Programming, Graphs, and Advanced Backtracking patterns.</p>
+                        </div>
+
+                        <div class="achievement-card glass-panel">
+                            <div class="achievement-header">
+                                <span class="achieve-badge">HACKATHON</span>
+                                <span class="achieve-icon">⭐</span>
+                            </div>
+                            <div class="achieve-value">FINALIST</div>
+                            <div class="achieve-title">National Level Hackathons</div>
+                            <p class="achieve-desc">Engineered full-stack and AI-driven solutions under strict 24-48 hour hackathon timelines.</p>
+                        </div>
+
+                        <div class="achievement-card glass-panel">
+                            <div class="achievement-header">
+                                <span class="achieve-badge">OPEN SOURCE</span>
+                                <span class="achieve-icon">🌐</span>
+                            </div>
+                            <div class="achieve-value">ACTIVE</div>
+                            <div class="achieve-title">GitHub Contributor</div>
+                            <p class="achieve-desc">Maintaining clean repositories, modular documentation, and reproducible deployment setups.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 17, 18, 19. PROJECTS SECTION (Large visual + Glass overlay + Gallery) -->
+                <section id="projects" class="section">
+                    <div class="section-header">
+                        <span class="section-tag">// 06. SHOWCASE</span>
+                        <h2 class="section-title">FEATURED PROJECTS</h2>
+                    </div>
+
+                    <!-- PROJECT 01 -->
+                    <div class="project-showcase-container" id="project-1">
+                        <div class="project-visual-canvas">
+                            <div class="canvas-image-layer" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);">
+                                <div class="canvas-code-preview">
+                                    <pre><code>// AI Automation & Telegram Bot Orchestrator
+class AutonomousAgentDispatcher:
+    def __init__(self, api_key: str):
+        self.router = APIRouter(prefix="/api/agent")
+        self.event_bus = EventBus()
+        
+    async def dispatch(self, payload: AgentPayload) -> TaskResult:
+        telegram_worker.notify(f"Dispatched task: {payload.name}")
+        return await engine.execute(payload)</code></pre>
+                                </div>
+                            </div>
+                            <!-- 18. Glass Overlay Panel -->
+                            <div class="project-glass-overlay">
+                                <div class="project-overlay-header">
+                                    <span class="project-index">PROJECT 01</span>
+                                    <h3 class="project-heading">Autonomous Workflow & Telegram Bot Engine</h3>
+                                </div>
+                                <p class="project-summary">
+                                    A distributed task automation service built with FastAPI that ingests webhook events, analyzes telemetry, and dispatches instant real-time alerts to Telegram bots with zero latency.
+                                </p>
+                                <div class="project-tech-chips">
+                                    <span class="tech-chip">Python</span>
+                                    <span class="tech-chip">FastAPI</span>
+                                    <span class="tech-chip">Telegram API</span>
+                                    <span class="tech-chip">Docker</span>
+                                </div>
+                                
+                                <!-- 19. Gallery Thumbnails -->
+                                <div class="project-gallery-controls">
+                                    <span class="gallery-label">PREVIEW VIEWS:</span>
+                                    <button type="button" class="gallery-thumb-btn active" data-proj="1" data-view="1">[ 1. ARCHITECTURE ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="1" data-view="2">[ 2. TELEGRAM BOT ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="1" data-view="3">[ 3. API METRICS ]</button>
+                                </div>
+
+                                <div class="project-links">
+                                    <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
+                                    <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PROJECT 02 -->
+                    <div class="project-showcase-container" id="project-2">
+                        <div class="project-visual-canvas">
+                            <div class="canvas-image-layer" style="background: linear-gradient(135deg, #022c22 0%, #064e3b 100%);">
+                                <div class="canvas-code-preview">
+                                    <pre><code>// Realtime Analytics & Telemetry Dashboard
+const DashboardStream = () => {
+    const [metrics, setMetrics] = useState&lt;MetricData[]&gt;([]);
+    useWebSocket("wss://telemetry.mithun.dev", {
+        onMessage: (evt) => updateHeatmap(JSON.parse(evt.data))
+    });
+    return &lt;InteractiveHeatmap data={metrics} /&gt;;
+};</code></pre>
+                                </div>
+                            </div>
+                            <!-- 18. Glass Overlay Panel -->
+                            <div class="project-glass-overlay">
+                                <div class="project-overlay-header">
+                                    <span class="project-index">PROJECT 02</span>
+                                    <h3 class="project-heading">Full-Stack Cloud Telemetry Platform</h3>
+                                </div>
+                                <p class="project-summary">
+                                    Full-stack monitoring system offering real-time streaming charts, container metrics aggregation, and incident triage with sub-second WebSocket updates and historical PostgreSQL audit trails.
+                                </p>
+                                <div class="project-tech-chips">
+                                    <span class="tech-chip">React</span>
+                                    <span class="tech-chip">TypeScript</span>
+                                    <span class="tech-chip">FastAPI</span>
+                                    <span class="tech-chip">PostgreSQL</span>
+                                    <span class="tech-chip">Redis</span>
+                                </div>
+
+                                <!-- 19. Gallery Thumbnails -->
+                                <div class="project-gallery-controls">
+                                    <span class="gallery-label">PREVIEW VIEWS:</span>
+                                    <button type="button" class="gallery-thumb-btn active" data-proj="2" data-view="1">[ 1. OVERVIEW ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="2" data-view="2">[ 2. CLOUD TRACE ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="2" data-view="3">[ 3. BENCHMARKS ]</button>
+                                </div>
+
+                                <div class="project-links">
+                                    <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
+                                    <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PROJECT 03 -->
+                    <div class="project-showcase-container" id="project-3">
+                        <div class="project-visual-canvas">
+                            <div class="canvas-image-layer" style="background: linear-gradient(135deg, #311042 0%, #1e1b4b 100%);">
+                                <div class="canvas-code-preview">
+                                    <pre><code>// High-Concurrency Distributed Chat Server
+class ChatHub:
+    def __init__(self):
+        self.active_conns: list[WebSocket] = []
+        self.redis_client = aioredis.from_url("redis://localhost:6379")
+        
+    async def broadcast(self, channel: str, msg: dict):
+        await self.redis_client.publish(channel, json.dumps(msg))</code></pre>
+                                </div>
+                            </div>
+                            <!-- 18. Glass Overlay Panel -->
+                            <div class="project-glass-overlay">
+                                <div class="project-overlay-header">
+                                    <span class="project-index">PROJECT 03</span>
+                                    <h3 class="project-heading">Distributed High-Throughput Chat Engine</h3>
+                                </div>
+                                <p class="project-summary">
+                                    Fault-tolerant messaging protocol handler featuring room multiplexing, end-to-end payload validation, message buffering, and seamless horizontal scaling with Redis Pub/Sub backbones.
+                                </p>
+                                <div class="project-tech-chips">
+                                    <span class="tech-chip">Python</span>
+                                    <span class="tech-chip">WebSockets</span>
+                                    <span class="tech-chip">Redis Pub/Sub</span>
+                                    <span class="tech-chip">Docker Compose</span>
+                                </div>
+
+                                <!-- 19. Gallery Thumbnails -->
+                                <div class="project-gallery-controls">
+                                    <span class="gallery-label">PREVIEW VIEWS:</span>
+                                    <button type="button" class="gallery-thumb-btn active" data-proj="3" data-view="1">[ 1. TOPOLOGY ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="3" data-view="2">[ 2. STREAM ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="3" data-view="3">[ 3. LOAD TEST ]</button>
+                                </div>
+
+                                <div class="project-links">
+                                    <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
+                                    <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- 21. CONTACT SECTION -->
+                <section id="contact" class="section">
+                    <div class="section-header">
+                        <span class="section-tag">// 07. GET IN TOUCH</span>
+                        <h2 class="section-title">CONTACT</h2>
+                    </div>
+                    <div class="glass-panel contact-card">
+                        <div class="contact-inner">
+                            <h3>Want to collaborate, hire, or connect?</h3>
+                            <p class="contact-subtitle">
+                                I'm actively open for engineering internships, full-time opportunities for 2026, and interesting technical collaborations.
+                            </p>
+                            <div class="contact-button-row">
+                                <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline">[ GitHub ]</a>
+                                <a href="https://linkedin.com" target="_blank" rel="noopener" class="btn btn-outline">[ LinkedIn ]</a>
+                                <a href="mailto:contact@mithun.dev" class="btn btn-outline">[ Email ]</a>
+                                <button type="button" class="btn btn-primary open-chat-trigger">[ MESSAGE MITHUN ]</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 22. RESUME SECTION -->
+                <section id="resume" class="section">
+                    <div class="section-header">
+                        <span class="section-tag">// 08. CREDENTIALS</span>
+                        <h2 class="section-title">RESUME</h2>
+                    </div>
+                    <div class="glass-panel resume-container">
+                        <div class="resume-preview-sheet">
+                            <div class="sheet-header">
+                                <h3>MITHUN</h3>
+                                <p>B.E. Computer Science & Engineering | Chennai Institute of Technology</p>
+                                <span class="sheet-contact">Email: contact@mithun.dev | GitHub | LinkedIn</span>
+                            </div>
+                            <div class="sheet-divider"></div>
+                            <div class="sheet-body-preview">
+                                <div class="sheet-section">
+                                    <h5>TECHNICAL COMPETENCIES</h5>
+                                    <p><strong>Languages:</strong> Python, C, C++, Java, JavaScript, TypeScript, SQL</p>
+                                    <p><strong>Frameworks:</strong> FastAPI, Flask, Django, React, Node.js</p>
+                                    <p><strong>Databases & Tools:</strong> PostgreSQL, MySQL, Redis, Docker, Git, Linux</p>
+                                </div>
+                                <div class="sheet-section">
+                                    <h5>NOTABLE ACHIEVEMENTS</h5>
+                                    <p>&bull; 680+ LeetCode DSA Problems Solved</p>
+                                    <p>&bull; National Level Hackathon Finalist</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="resume-actions">
+                            <a href="#resume" class="btn btn-primary" id="download-resume-btn">
+                                <span class="btn-icon">📥</span> [ DOWNLOAD RESUME ]
+                            </a>
+                            <a href="#resume" class="btn btn-outline" id="view-resume-btn">
+                                <span class="btn-icon">📄</span> [ VIEW FULL PDF ]
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 23 & 24. FOOTER & BYE JANE -->
+                <footer id="site-footer">
+                    <div class="footer-divider"></div>
+                    <div class="footer-content">
+                        <h2 class="footer-brand">MITHUN PORTFOLIO</h2>
+                        <div class="footer-social-links">
+                            <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+                            <span class="footer-sep">&bull;</span>
+                            <a href="https://linkedin.com" target="_blank" rel="noopener">LinkedIn</a>
+                            <span class="footer-sep">&bull;</span>
+                            <a href="mailto:contact@mithun.dev">Email</a>
+                            <span class="footer-sep">&bull;</span>
+                            <a href="javascript:void(0)" class="open-chat-trigger">Telegram Chat</a>
+                        </div>
+                        <p class="footer-copyright">&copy; 2026 Mithun. All rights reserved.</p>
+                    </div>
+
+                    <!-- 24. Bye Jane ending animation -->
+                    <div class="footer-bye-container">
+                        <img id="jane-bye" src="res/chibi_jane/bye/1.png" alt="Bye Jane">
+                        <span class="bye-caption">Thank you for visiting! See you soon.</span>
+                    </div>
+                </footer>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         20. CHAT UI MODAL (with chat.png & dp.png, FastAPI & Telegram ready)
+         ========================================================================= -->
+    <div id="chat-modal-overlay" class="modal-overlay hidden">
+        <div class="chat-modal glass-card">
+            <!-- Modal Header -->
+            <div class="chat-modal-header">
+                <div class="chat-header-identity">
+                    <div class="chat-dp-wrap">
+                        <img src="res/chibi_jane/dp.png" alt="Mithun Avatar" class="chat-dp-img">
+                        <span class="chat-online-badge"></span>
+                    </div>
+                    <div>
+                        <h3 class="chat-title">CHAT WITH MITHUN</h3>
+                        <span class="chat-status-text">Instant Telegram Relay Connected</span>
+                    </div>
+                </div>
+                <button type="button" class="chat-close-btn" id="chat-close-btn" aria-label="Close Chat">&times;</button>
             </div>
 
-            <!-- Right Side: Hanging Jane (Scroll Position) -->
-            <aside class="scroll-progress-right">
-                <div class="hanging-track">
-                    <img id="jane-clinging" src="res/chibi_jane/clinging/1.png" alt="Hanging Jane">
+            <!-- STEP 1: Entrance / Onboarding Form -->
+            <div id="chat-step-intro" class="chat-step-body">
+                <div class="chat-jane-stage">
+                    <img src="res/chibi_jane/chat.png" alt="Chat Jane" class="chat-jane-intro-img">
                 </div>
-            </aside>
-        </main>
-        
-        <footer id="site-footer">
-            <hr>
-            <div class="footer-content">
-                <h2>MITHUN PORTFOLIO</h2>
-                <p>GitHub | LinkedIn | Email</p>
-                <p>&copy; 2026</p>
+                <h4 class="chat-greeting-title">👋 Hello! How can I help you?</h4>
+                <p class="chat-greeting-sub">Leave your details and message. Your text gets instantly relayed to Mithun's Telegram.</p>
+
+                <form id="chat-onboarding-form" class="chat-form">
+                    <div class="form-group">
+                        <label for="chat-input-name">Your Name</label>
+                        <input type="text" id="chat-input-name" required placeholder="e.g. Alex Turner" class="chat-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="chat-input-email">Your Email</label>
+                        <input type="email" id="chat-input-email" required placeholder="e.g. alex@company.com" class="chat-field">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="start-chat-btn">
+                        [ START CHAT ]
+                    </button>
+                </form>
             </div>
-            <div class="footer-jane">
-                <img id="jane-bye" src="res/chibi_jane/bye/1.png" alt="Bye Jane">
+
+            <!-- STEP 2: Live Message Stream -->
+            <div id="chat-step-convo" class="chat-step-body hidden">
+                <div class="chat-message-stream" id="chat-stream">
+                    <!-- Automated greeting from Mithun -->
+                    <div class="chat-bubble-row received">
+                        <img src="res/chibi_jane/dp.png" alt="Mithun" class="chat-bubble-dp">
+                        <div class="chat-bubble">
+                            <span class="sender-name">Mithun</span>
+                            <p>Hey there! Thanks for dropping by my portfolio. Ask me anything about my projects, experience, or tech stack!</p>
+                            <span class="bubble-time">Just now</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input area -->
+                <form id="chat-send-form" class="chat-composer-wrap">
+                    <input type="text" id="chat-composer-input" placeholder="Type a message..." required class="chat-field composer-field" autocomplete="off">
+                    <button type="submit" class="btn btn-primary composer-send-btn" id="send-msg-btn" aria-label="Send">
+                        <span>➤</span>
+                    </button>
+                </form>
             </div>
-            <hr>
-        </footer>
+        </div>
     </div>
 
     <!-- Scripts -->

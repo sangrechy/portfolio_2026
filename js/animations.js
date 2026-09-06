@@ -1,6 +1,8 @@
 /**
- * Jane Animation Controller
- * Handles frame-by-frame sequences for various Jane states.
+ * ============================================================================
+ * JANE ANIMATION CONTROLLER (v2.0)
+ * Handles precise frame-by-frame sequences with instant cache lookups
+ * ============================================================================
  */
 
 class JaneAnimator {
@@ -16,12 +18,18 @@ class JaneAnimator {
         this.timer = null;
         this.isPlaying = false;
         
-        // Preload images
-        this.images = [];
-        for (let i = 1; i <= frameCount; i++) {
+        // Image cache dictionary: baseUrl -> Array<Image>
+        this.cache = {};
+        this.preloadFrames(frameBaseUrl, frameCount);
+    }
+
+    preloadFrames(baseUrl, count) {
+        if (this.cache[baseUrl]) return;
+        this.cache[baseUrl] = [];
+        for (let i = 1; i <= count; i++) {
             const img = new Image();
-            img.src = `${this.frameBaseUrl}${i}.png`;
-            this.images.push(img);
+            img.src = `${baseUrl}${i}.png`;
+            this.cache[baseUrl].push(img);
         }
     }
 
@@ -34,8 +42,10 @@ class JaneAnimator {
     stop() {
         if (!this.isPlaying) return;
         this.isPlaying = false;
-        clearInterval(this.timer);
-        this.timer = null;
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
     }
 
     nextFrame() {
@@ -45,7 +55,7 @@ class JaneAnimator {
             if (this.loop) {
                 this.currentFrame = 1;
             } else {
-                this.currentFrame = this.frameCount; // Hold on last frame
+                this.currentFrame = this.frameCount; // Hold on final frame
                 this.stop();
                 if (this.onComplete) this.onComplete();
                 return;
@@ -56,51 +66,45 @@ class JaneAnimator {
     }
     
     updateImage() {
-        if (this.element) {
-            // Use preloaded image source
-            this.element.src = this.images[this.currentFrame - 1].src;
+        if (this.element && this.cache[this.frameBaseUrl]) {
+            const cachedImg = this.cache[this.frameBaseUrl][this.currentFrame - 1];
+            if (cachedImg && cachedImg.src) {
+                this.element.src = cachedImg.src;
+            }
         }
     }
     
     setFrameUrl(frameBaseUrl) {
         if (this.frameBaseUrl === frameBaseUrl) return;
         this.frameBaseUrl = frameBaseUrl;
-        
-        // Preload new images
-        this.images = [];
-        for (let i = 1; i <= this.frameCount; i++) {
-            const img = new Image();
-            img.src = `${this.frameBaseUrl}${i}.png`;
-            this.images.push(img);
-        }
-        
+        this.preloadFrames(frameBaseUrl, this.frameCount);
         this.updateImage();
     }
 }
 
-// Global Animators
+// Global Animators Map
 const animators = {};
 
 function initAnimations() {
-    // 1. Walking (Loading) - 8 frames, 120ms
+    // 1. Walking (Loading Screen) - 8 frames, 120ms
     animators.walking = new JaneAnimator('jane-walking', 'res/chibi_jane/walking/', 8, 120, true);
     
-    // 2. Welcome - 5 frames, 500ms, plays once
-    animators.welcome = new JaneAnimator('jane-welcome', 'res/chibi_jane/welcome/', 5, 500, false, () => {
-        // Expose a global event when welcome finishes
+    // 2. Welcome (Intro Bow) - 5 frames, 220ms, plays 1->5 once, total ~1.1s + hold
+    animators.welcome = new JaneAnimator('jane-welcome', 'res/chibi_jane/welcome/', 5, 220, false, () => {
         document.dispatchEvent(new Event('welcomeComplete'));
     });
     
-    // 3. Bike (Scroll) - 8 frames, 120ms, loops
-    animators.bike = new JaneAnimator('jane-bike', 'res/chibi_jane/bike_back/', 8, 120, true);
+    // 3. Bike (Scroll journey) - Preload BOTH bike_front (downward) and bike_back (upward)
+    animators.bike = new JaneAnimator('jane-bike', 'res/chibi_jane/bike_front/', 8, 110, true);
+    animators.bike.preloadFrames('res/chibi_jane/bike_back/', 8);
     
-    // 4. Clinging (Scrollbar) - 4 frames, 200ms
+    // 4. Clinging (Right Scrollbar Jane) - 4 frames, 200ms
     animators.clinging = new JaneAnimator('jane-clinging', 'res/chibi_jane/clinging/', 4, 200, true);
     
-    // 5. Bye (Footer) - 4 frames, 120ms, plays once and holds (or loops based on preference, instructions say 1->4 hold if intended, but also HTML said loop. We'll play once and hold).
-    animators.bye = new JaneAnimator('jane-bye', 'res/chibi_jane/bye/', 4, 120, false);
+    // 5. Bye (Footer ending in continuous loop) - 4 frames, 130ms, loop = true
+    animators.bye = new JaneAnimator('jane-bye', 'res/chibi_jane/bye/', 4, 130, true);
 }
 
-// Export to window
+// Expose globally
 window.initAnimations = initAnimations;
 window.animators = animators;
