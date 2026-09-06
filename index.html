@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mithun Portfolio</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+    <!-- 1. LOADING SCREEN -->
+    <div id="loading-screen" class="fullscreen-overlay">
+        <div class="loading-container">
+            <h1 class="portfolio-title-loader">MITHUN PORTFOLIO</h1>
+            <div class="jane-loader-stage">
+                <img id="jane-walking" src="res/chibi_jane/walking/1.png" alt="Loading Jane" class="jane-sprite">
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar-wrap">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <div id="progress-text" class="progress-text">0%</div>
+                <div class="loading-text">Preparing...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. WELCOME SCREEN -->
+    <div id="welcome-screen" class="fullscreen-overlay hidden">
+        <div class="welcome-container">
+            <div class="jane-welcome-stage">
+                <img id="jane-welcome" src="res/chibi_jane/welcome/1.png" alt="Welcome Jane" class="jane-sprite">
+            </div>
+            <h2 id="welcome-text" class="welcome-text hidden-text">Welcome!</h2>
+        </div>
+    </div>
+
+    <!-- 3. MAIN PORTFOLIO -->
+    <div id="main-content" class="hidden">
+        <header id="site-header">
+            <div class="header-content">
+                <div class="header-logo">
+                    <img src="res/chibi_jane/header.png" alt="Header Jane" class="header-jane">
+                    <span class="logo-text">MITHUN PORTFOLIO</span>
+                </div>
+                <div class="theme-toggle" id="theme-toggle">
+                    <img src="res/chibi_jane/day.png" alt="Theme Jane" id="theme-jane">
+                    <span class="theme-icons">☀ &mdash; 🌙</span>
+                </div>
+            </div>
+            <nav class="main-nav">
+                <a href="#home">HOME</a>
+                <a href="#projects">PROJECTS</a>
+                <a id="nav-chat-btn" href="#chat">CHAT</a>
+                <a href="#resume">RESUME</a>
+            </nav>
+        </header>
+
+        <main class="content-wrapper">
+            <!-- Left Side: Bike Jane (Scroll Progress) -->
+            <aside class="scroll-progress-left">
+                <img id="jane-bike" src="res/chibi_jane/bike_back/1.png" alt="Bike Jane">
+            </aside>
+
+            <!-- Center: Page Content -->
+            <div class="page-content">
+                <section id="home" class="hero-section">
+                    <div class="hero-content">
+                        <h2>HELLO 👋</h2>
+                        <h1>I'M MITHUN</h1>
+                        <p class="subtitle">Computer Science Student</p>
+                        <p class="roles">Developer &bull; Builder &bull; Learner</p>
+                        <div class="social-links">
+                            <a href="#" class="btn">[ GitHub ]</a>
+                            <a href="#" class="btn">[ LinkedIn ]</a>
+                            <a href="#" class="btn">[ Email ]</a>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- More sections will be built here based on the blueprint -->
+                <section id="about" class="placeholder-section">
+                    <h2>ABOUT ME</h2>
+                    <p>Short introduction about Mithun...</p>
+                    <p>Scroll down to see the bike animation in action.</p>
+                    <br><br><br><br><br><br><br><br><br><br><br><br>
+                </section>
+                <section id="education" class="placeholder-section">
+                    <h2>EDUCATION</h2>
+                    <img src="res/chibi_jane/edu.png" alt="Education Jane" width="200">
+                    <br><br><br><br><br><br><br><br><br><br><br><br>
+                </section>
+                <section id="skills" class="placeholder-section">
+                    <h2>SKILLS</h2>
+                    <img src="res/chibi_jane/skill.png" alt="Skills Jane" width="200">
+                    <br><br><br><br><br><br><br><br><br><br><br><br>
+                </section>
+            </div>
+
+            <!-- Right Side: Hanging Jane (Scroll Position) -->
+            <aside class="scroll-progress-right">
+                <div class="hanging-track">
+                    <img id="jane-clinging" src="res/chibi_jane/clinging/1.png" alt="Hanging Jane">
+                </div>
+            </aside>
+        </main>
+        
+        <footer id="site-footer">
+            <hr>
+            <div class="footer-content">
+                <h2>MITHUN PORTFOLIO</h2>
+                <p>GitHub | LinkedIn | Email</p>
+                <p>&copy; 2026</p>
+            </div>
+            <div class="footer-jane">
+                <img id="jane-bye" src="res/chibi_jane/bye/1.png" alt="Bye Jane">
+            </div>
+            <hr>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/animations.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

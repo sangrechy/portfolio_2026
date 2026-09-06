@@ -1,0 +1,27 @@
+:root {
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --accent-color: #555555;
+    --border-color: #dddddd;
+    --card-bg: #f9f9f9;
+    --progress-bg: #eeeeee;
+    --progress-fill: #333333;
+    --overlay-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+    --bg-color: #1a1a1a;
+    --text-color: #f0f0f0;
+    --accent-color: #aaaaaa;
+    --border-color: #333333;
+    --card-bg: #2a2a2a;
+    --progress-bg: #333333;
+    --progress-fill: #f0f0f0;
+    --overlay-bg: #111111;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}

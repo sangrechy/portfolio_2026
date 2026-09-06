@@ -1,0 +1,291 @@
+/* Base & Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.hidden-text {
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.hidden-text.visible {
+    opacity: 1;
+}
+
+/* Overlays (Loading & Welcome) */
+.fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--overlay-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+
+.fullscreen-overlay.fade-out {
+    opacity: 0;
+}
+
+/* Loading Screen */
+.loading-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.portfolio-title-loader {
+    font-size: 2rem;
+    letter-spacing: 2px;
+}
+
+.jane-loader-stage img, .jane-welcome-stage img {
+    width: 400px;
+    height: 400px;
+    object-fit: contain;
+}
+
+.progress-container {
+    width: 300px;
+    margin-top: 20px;
+}
+
+.progress-bar-wrap {
+    width: 100%;
+    height: 10px;
+    background-color: var(--progress-bg);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--progress-fill);
+    transition: width 0.1s linear;
+}
+
+.progress-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.loading-text {
+    font-size: 0.9rem;
+    color: var(--accent-color);
+}
+
+/* Welcome Screen */
+.welcome-container {
+    text-align: center;
+}
+
+.welcome-text {
+    font-size: 2rem;
+    margin-top: 20px;
+    letter-spacing: 1px;
+}
+
+/* Main Portfolio Structure */
+#site-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-color);
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto 10px auto;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.header-jane {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#theme-jane {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.main-nav {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 10px;
+}
+
+.main-nav a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.main-nav a:hover {
+    color: var(--accent-color);
+}
+
+/* Content Layout (Bike - Center - Hanging) */
+.content-wrapper {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+}
+
+.scroll-progress-left {
+    width: 150px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+#jane-bike {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    position: sticky;
+    top: 100px; /* Offset from header */
+    transition: transform 0.1s ease-out; /* Smooth transition for vertical movement */
+}
+
+.page-content {
+    flex: 1;
+    padding: 40px;
+    max-width: 900px;
+}
+
+.scroll-progress-right {
+    width: 150px;
+    position: relative;
+}
+
+.hanging-track {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 20px;
+    width: 50px;
+    border-left: 2px dashed var(--border-color);
+}
+
+#jane-clinging {
+    width: 80px;
+    height: 160px;
+    object-fit: contain;
+    position: absolute;
+    left: -40px;
+    top: 0; /* JS will update this */
+    transition: top 0.1s ease-out;
+}
+
+/* Sections */
+.hero-section {
+    text-align: center;
+    padding: 100px 0;
+}
+
+.hero-content h2 { font-size: 2rem; margin-bottom: 10px; }
+.hero-content h1 { font-size: 4rem; margin-bottom: 10px; }
+.subtitle { font-size: 1.5rem; color: var(--accent-color); margin-bottom: 5px; }
+.roles { font-size: 1.2rem; margin-bottom: 30px; }
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 0 10px;
+    color: var(--text-color);
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--card-bg);
+}
+
+.btn:hover {
+    background-color: var(--progress-bg);
+}
+
+.placeholder-section {
+    margin-bottom: 80px;
+    padding: 40px;
+    background: var(--card-bg);
+    border-radius: 10px;
+}
+
+.placeholder-section h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+/* Footer */
+#site-footer {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: var(--bg-color);
+}
+
+#site-footer hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+.footer-jane {
+    margin: 20px 0;
+}
+
+#jane-bye {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+}
