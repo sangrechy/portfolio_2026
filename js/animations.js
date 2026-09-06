@@ -89,8 +89,8 @@ function initAnimations() {
     // 1. Walking (Loading Screen) - 8 frames, 120ms
     animators.walking = new JaneAnimator('jane-walking', 'res/chibi_jane/walking/', 8, 120, true);
     
-    // 2. Welcome (Intro Bow) - 5 frames, 220ms, plays 1->5 once, total ~1.1s + hold
-    animators.welcome = new JaneAnimator('jane-welcome', 'res/chibi_jane/welcome/', 5, 220, false, () => {
+    // 2. Welcome (Intro Bow) - 5 frames, 70ms, plays 1->5 once, total ~350ms + 150ms hold (0.5s total)
+    animators.welcome = new JaneAnimator('jane-welcome', 'res/chibi_jane/welcome/', 5, 70, false, () => {
         document.dispatchEvent(new Event('welcomeComplete'));
     });
     

@@ -76,46 +76,50 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================================
     window.animators.walking.start();
     
-    let progress = 0;
-    const MIN_LOADING_TIME = 5000; // 5000ms minimum presentation
-    const intervalTick = 50;
-    const step = 100 / (MIN_LOADING_TIME / intervalTick);
+    // Smooth 60fps requestAnimationFrame Progress Bar
+    const LOADING_DURATION = 1000; // 1000ms smooth progression
+    const startTime = performance.now();
 
-    const progressTimer = setInterval(() => {
-        progress += step;
-        const displayProgress = Math.min(100, Math.round(progress));
-        progressBar.style.width = `${displayProgress}%`;
-        progressText.innerText = `${displayProgress}%`;
+    function stepProgress(now) {
+        const elapsed = now - startTime;
+        const progressFraction = Math.min(elapsed / LOADING_DURATION, 1);
+        const percent = Math.round(progressFraction * 100);
 
-        if (progress >= 100) {
-            clearInterval(progressTimer);
-            handleLoadingComplete();
+        progressBar.style.width = `${percent}%`;
+        progressText.textContent = `${percent}%`;
+
+        if (progressFraction < 1) {
+            requestAnimationFrame(stepProgress);
+        } else {
+            // Explicitly lock to 100%
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
+            
+            // Brief moment (120ms) so 100% is clearly seen before fading out
+            setTimeout(() => {
+                handleLoadingComplete();
+            }, 120);
         }
-    }, intervalTick);
+    }
+
+    requestAnimationFrame(stepProgress);
 
     function handleLoadingComplete() {
         window.animators.walking.stop();
         loadingScreen.classList.add('fade-out');
 
+        // Immediate snap to welcome with no artificial lag
         setTimeout(() => {
             loadingScreen.classList.add('hidden');
-            
-            // Show Welcome Screen
             welcomeScreen.classList.remove('hidden');
+            welcomeText.classList.remove('hidden-text');
+            welcomeText.classList.add('visible');
             window.animators.welcome.start();
-
-            // Reveal English Welcome immediately
-            setTimeout(() => {
-                welcomeText.classList.remove('hidden-text');
-                welcomeText.classList.add('visible');
-            }, 180);
-
-        }, 400);
+        }, 160);
     }
 
-    // Welcome Complete Handler (total ~1.5s sequence)
+    // Welcome Complete Handler: 350ms frame sequence + 150ms hold = exactly 0.5s (500ms)
     document.addEventListener('welcomeComplete', () => {
-        // Hold on bow for ~350ms, then smoothly transition into main portfolio
         setTimeout(() => {
             welcomeScreen.classList.add('fade-out');
             
@@ -128,8 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Initial scroll positioning
                 updateScrollPositions();
-            }, 400);
-        }, 350);
+            }, 160);
+        }, 150);
     });
 
     // ========================================================================
@@ -179,9 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- B. HANGING JANE SCROLLBAR (RIGHT SIDE) ---
-        if (hangingTrack && clingingCarriage) {
+        if (hangingTrack && clingingCarriage && !isDraggingScrollbar) {
             const trackHeight = hangingTrack.clientHeight;
-            const carriageHeight = clingingCarriage.clientHeight || 110;
+            const carriageHeight = clingingCarriage.offsetHeight || 110;
             const maxTrackTravel = Math.max(0, trackHeight - carriageHeight);
             const clingTop = scrollPercentage * maxTrackTravel;
             clingingCarriage.style.top = `${clingTop}px`;
@@ -209,46 +213,70 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', updateScrollPositions);
 
     // ========================================================================
-    // 4. INTERACTIVE HANGING SCROLLBAR (Click & Drag to Scroll)
+    // 4. INTERACTIVE HANGING SCROLLBAR (True Native Scrollbar Behavior)
     // ========================================================================
     if (hangingTrack && clingingCarriage) {
-        // Click track to jump scroll
-        hangingTrack.addEventListener('click', (e) => {
-            const rect = hangingTrack.getBoundingClientRect();
-            const clickY = e.clientY - rect.top;
-            const trackHeight = rect.height;
-            const targetRatio = Math.max(0, Math.min(1, clickY / trackHeight));
-            const maxScroll = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            window.scrollTo({
-                top: targetRatio * maxScroll,
-                behavior: 'smooth'
-            });
-        });
+        let dragGrabOffsetY = 0;
 
-        // Drag Jane carriage
-        clingingCarriage.addEventListener('mousedown', (e) => {
+        function getScrollMetrics() {
+            const trackRect = hangingTrack.getBoundingClientRect();
+            const carriageHeight = clingingCarriage.offsetHeight || 110;
+            const maxTravel = Math.max(1, trackRect.height - carriageHeight);
+            const scrollHeight = document.documentElement.scrollHeight;
+            const clientHeight = document.documentElement.clientHeight;
+            const maxScroll = Math.max(1, scrollHeight - clientHeight);
+            return { trackRect, carriageHeight, maxTravel, maxScroll };
+        }
+
+        function setScrollFromThumb(thumbTop, metrics) {
+            const clampedTop = Math.max(0, Math.min(metrics.maxTravel, thumbTop));
+            // Move Jane carriage directly with cursor
+            clingingCarriage.style.top = `${clampedTop}px`;
+            // Scroll document to matching position
+            const scrollRatio = clampedTop / metrics.maxTravel;
+            window.scrollTo(0, scrollRatio * metrics.maxScroll);
+        }
+
+        // Pointer down on Carriage: starts drag
+        clingingCarriage.addEventListener('pointerdown', (e) => {
             isDraggingScrollbar = true;
+            clingingCarriage.setPointerCapture(e.pointerId);
+            clingingCarriage.classList.add('is-dragging');
+
+            const carriageRect = clingingCarriage.getBoundingClientRect();
+            dragGrabOffsetY = e.clientY - carriageRect.top;
+
             document.body.style.userSelect = 'none';
+            e.preventDefault();
             e.stopPropagation();
         });
 
-        window.addEventListener('mousemove', (e) => {
+        // Pointer move: Jane follows cursor 1:1 in real time
+        clingingCarriage.addEventListener('pointermove', (e) => {
             if (!isDraggingScrollbar) return;
-            const rect = hangingTrack.getBoundingClientRect();
-            const moveY = e.clientY - rect.top;
-            const targetRatio = Math.max(0, Math.min(1, moveY / rect.height));
-            const maxScroll = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            window.scrollTo({
-                top: targetRatio * maxScroll,
-                behavior: 'auto'
-            });
+            const metrics = getScrollMetrics();
+            const thumbTop = e.clientY - metrics.trackRect.top - dragGrabOffsetY;
+            setScrollFromThumb(thumbTop, metrics);
         });
 
-        window.addEventListener('mouseup', () => {
+        function endDrag(e) {
             if (isDraggingScrollbar) {
                 isDraggingScrollbar = false;
+                try { clingingCarriage.releasePointerCapture(e.pointerId); } catch (err) {}
+                clingingCarriage.classList.remove('is-dragging');
                 document.body.style.userSelect = '';
             }
+        }
+
+        clingingCarriage.addEventListener('pointerup', endDrag);
+        clingingCarriage.addEventListener('pointercancel', endDrag);
+
+        // Click track outside carriage: jump scrollbar directly to clicked location
+        hangingTrack.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('#clinging-carriage')) return;
+            const metrics = getScrollMetrics();
+            const targetTop = e.clientY - metrics.trackRect.top - (metrics.carriageHeight / 2);
+            setScrollFromThumb(targetTop, metrics);
         });
     }
 

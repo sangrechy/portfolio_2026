@@ -122,10 +122,6 @@
 
                 <!-- 8. HERO SECTION -->
                 <section id="home" class="section hero-section">
-                    <div class="hero-badge">
-                        <span class="status-dot"></span> Available for Projects & Engineering Roles 2026
-                    </div>
-                    
                     <h2 class="hero-greeting">HELLO 👋</h2>
                     <h1 class="hero-title">I'M <span class="gradient-text">MITHUN</span></h1>
                     
@@ -148,33 +144,27 @@
                     </div>
                 </section>
 
-                <!-- 12. ABOUT SECTION -->
+                <!-- 12. ABOUT SECTION (with work.png) -->
                 <section id="about" class="section">
                     <div class="section-header">
                         <span class="section-tag">// 01. OVERVIEW</span>
                         <h2 class="section-title">ABOUT ME</h2>
                     </div>
                     <div class="glass-panel about-card">
-                        <div class="about-text-content">
-                            <p class="lead-text">
-                                Hello! I'm Mithun, a passionate Computer Science student and software engineer who thrives at the intersection of robust backend architectures, distributed systems, and modern, delightful user interfaces.
-                            </p>
-                            <p>
-                                I spend my time designing scalable services, tackling challenging algorithmic problems on LeetCode, and developing intelligent automation agents. Always curious, constantly building, and continuously leveling up my engineering toolkit.
-                            </p>
-                            <div class="quick-stats-grid">
-                                <div class="stat-box">
-                                    <span class="stat-number">680+</span>
-                                    <span class="stat-label">LeetCode Solved</span>
-                                </div>
-                                <div class="stat-box">
-                                    <span class="stat-number">15+</span>
-                                    <span class="stat-label">Projects Built</span>
-                                </div>
-                                <div class="stat-box">
-                                    <span class="stat-number">2026</span>
-                                    <span class="stat-label">Graduation Year</span>
-                                </div>
+                        <div class="about-layout-grid">
+                            <div class="about-text-col">
+                                <p class="lead-text">
+                                    Hello! I'm Mithun, a passionate Computer Science student and software engineer who thrives at the intersection of robust backend architectures, distributed systems, and modern, delightful user interfaces.
+                                </p>
+                                <p>
+                                    I spend my time designing scalable services, tackling challenging algorithmic problems on LeetCode, and developing intelligent automation agents. Always curious, constantly building, and continuously leveling up my engineering toolkit.
+                                </p>
+                            </div>
+
+                            <!-- Integrated Work Jane in About Me -->
+                            <div class="about-jane-col">
+                                <img src="res/chibi_jane/work.png" alt="Mithun Work Jane" class="section-jane-img about-work-jane">
+                                <span class="work-caption">Focus &amp; Execution</span>
                             </div>
                         </div>
                     </div>
@@ -270,77 +260,47 @@
                     </div>
                 </section>
 
-                <!-- 15. WORK / CURRENT ACTIVITY (with work.png) -->
-                <section id="work" class="section">
-                    <div class="section-header">
-                        <span class="section-tag">// 04. ACTIVE FOCUS</span>
-                        <h2 class="section-title">CURRENT ACTIVITY</h2>
-                    </div>
-                    <div class="glass-panel work-panel">
-                        <div class="work-content-left">
-                            <div class="focus-item">
-                                <div class="focus-icon-wrap">⚡</div>
-                                <div>
-                                    <h4>Currently Building</h4>
-                                    <p>Intelligent agentic automation systems with FastAPI, Telegram bot orchestration, and reactive frontend event systems.</p>
-                                </div>
-                            </div>
-                            <div class="focus-item">
-                                <div class="focus-icon-wrap">🧠</div>
-                                <div>
-                                    <h4>Currently Learning</h4>
-                                    <p>Deepening understanding of distributed system fault tolerance, high-throughput message queues, and WebSockets at scale.</p>
-                                </div>
-                            </div>
-                            <div class="focus-item">
-                                <div class="focus-icon-wrap">🎯</div>
-                                <div>
-                                    <h4>Current Focus</h4>
-                                    <p>Competitive programming optimizations, LeetCode daily streaks, and preparing for top-tier software engineering roles.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="work-jane-right">
-                            <img src="res/chibi_jane/work.png" alt="Work Jane" class="section-jane-img">
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 16. ACHIEVEMENTS SECTION -->
+                <!-- 16. ACHIEVEMENTS SECTION (with trophy.png) -->
                 <section id="achievements" class="section">
                     <div class="section-header">
                         <span class="section-tag">// 05. MILESTONES</span>
                         <h2 class="section-title">ACHIEVEMENTS</h2>
                     </div>
-                    <div class="achievements-grid">
-                        <div class="achievement-card glass-panel">
-                            <div class="achievement-header">
-                                <span class="achieve-badge">LEETCODE</span>
-                                <span class="achieve-icon">🏆</span>
-                            </div>
-                            <div class="achieve-value">680+</div>
-                            <div class="achieve-title">Data Structures & Algorithms</div>
-                            <p class="achieve-desc">Proficient in Binary Trees, Dynamic Programming, Graphs, and Advanced Backtracking patterns.</p>
+                    <div class="achievements-layout-wrapper">
+                        <div class="achieve-jane-col">
+                            <img src="res/chibi_jane/trophy.png" alt="Mithun Trophy Jane" class="section-jane-img achieve-trophy-jane">
+                            <span class="achieve-jane-badge">Top Performer</span>
                         </div>
-
-                        <div class="achievement-card glass-panel">
-                            <div class="achievement-header">
-                                <span class="achieve-badge">HACKATHON</span>
-                                <span class="achieve-icon">⭐</span>
+                        <div class="achievements-grid">
+                            <div class="achievement-card glass-panel">
+                                <div class="achievement-header">
+                                    <span class="achieve-badge">LEETCODE</span>
+                                    <span class="achieve-icon">🏆</span>
+                                </div>
+                                <div class="achieve-value">680+</div>
+                                <div class="achieve-title">Data Structures & Algorithms</div>
+                                <p class="achieve-desc">Proficient in Binary Trees, Dynamic Programming, Graphs, and Advanced Backtracking patterns.</p>
                             </div>
-                            <div class="achieve-value">FINALIST</div>
-                            <div class="achieve-title">National Level Hackathons</div>
-                            <p class="achieve-desc">Engineered full-stack and AI-driven solutions under strict 24-48 hour hackathon timelines.</p>
-                        </div>
 
-                        <div class="achievement-card glass-panel">
-                            <div class="achievement-header">
-                                <span class="achieve-badge">OPEN SOURCE</span>
-                                <span class="achieve-icon">🌐</span>
+                            <div class="achievement-card glass-panel">
+                                <div class="achievement-header">
+                                    <span class="achieve-badge">HACKATHON</span>
+                                    <span class="achieve-icon">⭐</span>
+                                </div>
+                                <div class="achieve-value">FINALIST</div>
+                                <div class="achieve-title">National Level Hackathons</div>
+                                <p class="achieve-desc">Engineered full-stack and AI-driven solutions under strict 24-48 hour hackathon timelines.</p>
                             </div>
-                            <div class="achieve-value">ACTIVE</div>
-                            <div class="achieve-title">GitHub Contributor</div>
-                            <p class="achieve-desc">Maintaining clean repositories, modular documentation, and reproducible deployment setups.</p>
+
+                            <div class="achievement-card glass-panel">
+                                <div class="achievement-header">
+                                    <span class="achieve-badge">OPEN SOURCE</span>
+                                    <span class="achieve-icon">🌐</span>
+                                </div>
+                                <div class="achieve-value">ACTIVE</div>
+                                <div class="achieve-title">GitHub Contributor</div>
+                                <p class="achieve-desc">Maintaining clean repositories, modular documentation, and reproducible deployment setups.</p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -497,63 +457,77 @@ class ChatHub:
 
                 </section>
 
-                <!-- 21. CONTACT SECTION -->
+                <!-- 21. CONTACT SECTION (with chat.png) -->
                 <section id="contact" class="section">
                     <div class="section-header">
-                        <span class="section-tag">// 07. GET IN TOUCH</span>
+                        <span class="section-tag">// 06. GET IN TOUCH</span>
                         <h2 class="section-title">CONTACT</h2>
                     </div>
                     <div class="glass-panel contact-card">
-                        <div class="contact-inner">
-                            <h3>Want to collaborate, hire, or connect?</h3>
-                            <p class="contact-subtitle">
-                                I'm actively open for engineering internships, full-time opportunities for 2026, and interesting technical collaborations.
-                            </p>
-                            <div class="contact-button-row">
-                                <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline">[ GitHub ]</a>
-                                <a href="https://linkedin.com" target="_blank" rel="noopener" class="btn btn-outline">[ LinkedIn ]</a>
-                                <a href="mailto:contact@mithun.dev" class="btn btn-outline">[ Email ]</a>
-                                <button type="button" class="btn btn-primary open-chat-trigger">[ MESSAGE MITHUN ]</button>
+                        <div class="contact-layout-grid">
+                            <div class="contact-jane-col">
+                                <img src="res/chibi_jane/chat.png" alt="Contact Jane" class="section-jane-img contact-chat-jane">
+                                <span class="contact-jane-badge">Instant Relay</span>
+                            </div>
+                            <div class="contact-inner">
+                                <h3>Want to collaborate, hire, or connect?</h3>
+                                <p class="contact-subtitle">
+                                    I'm actively open for engineering internships, full-time opportunities for 2026, and interesting technical collaborations. Send a message or start an instant chat!
+                                </p>
+                                <div class="contact-button-row">
+                                    <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline">[ GitHub ]</a>
+                                    <a href="https://linkedin.com" target="_blank" rel="noopener" class="btn btn-outline">[ LinkedIn ]</a>
+                                    <a href="mailto:contact@mithun.dev" class="btn btn-outline">[ Email ]</a>
+                                    <button type="button" class="btn btn-primary open-chat-trigger">[ MESSAGE MITHUN ]</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 22. RESUME SECTION -->
+                <!-- 22. RESUME SECTION (with cv.png) -->
                 <section id="resume" class="section">
                     <div class="section-header">
-                        <span class="section-tag">// 08. CREDENTIALS</span>
+                        <span class="section-tag">// 07. CREDENTIALS</span>
                         <h2 class="section-title">RESUME</h2>
                     </div>
                     <div class="glass-panel resume-container">
-                        <div class="resume-preview-sheet">
-                            <div class="sheet-header">
-                                <h3>MITHUN</h3>
-                                <p>B.E. Computer Science & Engineering | Chennai Institute of Technology</p>
-                                <span class="sheet-contact">Email: contact@mithun.dev | GitHub | LinkedIn</span>
+                        <div class="resume-layout-grid">
+                            <div class="resume-jane-col">
+                                <img src="res/chibi_jane/cv.png" alt="Mithun CV Jane" class="section-jane-img resume-cv-jane">
+                                <span class="resume-jane-badge">Verified CV</span>
                             </div>
-                            <div class="sheet-divider"></div>
-                            <div class="sheet-body-preview">
-                                <div class="sheet-section">
-                                    <h5>TECHNICAL COMPETENCIES</h5>
-                                    <p><strong>Languages:</strong> Python, C, C++, Java, JavaScript, TypeScript, SQL</p>
-                                    <p><strong>Frameworks:</strong> FastAPI, Flask, Django, React, Node.js</p>
-                                    <p><strong>Databases & Tools:</strong> PostgreSQL, MySQL, Redis, Docker, Git, Linux</p>
+                            <div class="resume-content-col">
+                                <div class="resume-preview-sheet">
+                                    <div class="sheet-header">
+                                        <h3>MITHUN</h3>
+                                        <p>B.E. Computer Science & Engineering | Chennai Institute of Technology</p>
+                                        <span class="sheet-contact">Email: contact@mithun.dev | GitHub | LinkedIn</span>
+                                    </div>
+                                    <div class="sheet-divider"></div>
+                                    <div class="sheet-body-preview">
+                                        <div class="sheet-section">
+                                            <h5>TECHNICAL COMPETENCIES</h5>
+                                            <p><strong>Languages:</strong> Python, C, C++, Java, JavaScript, TypeScript, SQL</p>
+                                            <p><strong>Frameworks:</strong> FastAPI, Flask, Django, React, Node.js</p>
+                                            <p><strong>Databases & Tools:</strong> PostgreSQL, MySQL, Redis, Docker, Git, Linux</p>
+                                        </div>
+                                        <div class="sheet-section">
+                                            <h5>NOTABLE ACHIEVEMENTS</h5>
+                                            <p>&bull; 680+ LeetCode DSA Problems Solved</p>
+                                            <p>&bull; National Level Hackathon Finalist</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="sheet-section">
-                                    <h5>NOTABLE ACHIEVEMENTS</h5>
-                                    <p>&bull; 680+ LeetCode DSA Problems Solved</p>
-                                    <p>&bull; National Level Hackathon Finalist</p>
+                                <div class="resume-actions">
+                                    <a href="#resume" class="btn btn-primary" id="download-resume-btn">
+                                        <span class="btn-icon">📥</span> [ DOWNLOAD RESUME ]
+                                    </a>
+                                    <a href="#resume" class="btn btn-outline" id="view-resume-btn">
+                                        <span class="btn-icon">📄</span> [ VIEW FULL PDF ]
+                                    </a>
                                 </div>
                             </div>
-                        </div>
-                        <div class="resume-actions">
-                            <a href="#resume" class="btn btn-primary" id="download-resume-btn">
-                                <span class="btn-icon">📥</span> [ DOWNLOAD RESUME ]
-                            </a>
-                            <a href="#resume" class="btn btn-outline" id="view-resume-btn">
-                                <span class="btn-icon">📄</span> [ VIEW FULL PDF ]
-                            </a>
                         </div>
                     </div>
                 </section>
