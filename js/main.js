@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Chat Modal Elements
     const chatOverlay = document.getElementById('chat-modal-overlay');
     const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatLogoutBtn = document.getElementById('chat-logout-btn');
     const navChatBtn = document.getElementById('nav-chat-btn');
     const chatTriggers = document.querySelectorAll('.open-chat-trigger');
     const chatStepIntro = document.getElementById('chat-step-intro');
@@ -39,12 +40,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatOnboardingForm = document.getElementById('chat-onboarding-form');
     const chatInputName = document.getElementById('chat-input-name');
     const chatInputEmail = document.getElementById('chat-input-email');
+    const startChatBtn = document.getElementById('start-chat-btn');
+    const chatOtpForm = document.getElementById('chat-otp-form');
+    const chatInputOtp = document.getElementById('chat-input-otp');
+    const otpTargetEmailDisplay = document.getElementById('otp-target-email-display');
+    const otpErrorMsg = document.getElementById('otp-error-msg');
+    const verifyOtpBtn = document.getElementById('verify-otp-btn');
+    const resendOtpBtn = document.getElementById('resend-otp-btn');
+    const changeEmailBtn = document.getElementById('change-email-btn');
     const chatSendForm = document.getElementById('chat-send-form');
     const chatComposerInput = document.getElementById('chat-composer-input');
     const chatStream = document.getElementById('chat-stream');
 
-    // User session data for chat
+    // User session data for chat & OTP
     let chatUser = {
+        name: '',
+        email: '',
+        token: ''
+    };
+    let pendingOtpUser = {
         name: '',
         email: ''
     };
@@ -444,24 +458,355 @@ Memory Footprint: 210MB`,
         if (e.target === chatOverlay) closeChatModal();
     });
 
-    // Step 1: Onboarding Submit
+    function getBackendUrl(path) {
+        const origin = window.location.origin || '';
+        if (origin.startsWith('http') && (origin.includes(':8000') || (!origin.includes(':5500') && !origin.includes(':3000')))) {
+            return path;
+        }
+        return `http://127.0.0.1:8000${path}`;
+    }
+
+    // --- COOKIE & SESSION STORAGE HELPERS (10-Day Session Lifetime) ---
+    function setCookie(name, value, days = 10) {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    }
+
+    function getCookie(name) {
+        return document.cookie.split('; ').reduce((r, v) => {
+            const parts = v.split('=');
+            return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+        }, '');
+    }
+
+    function deleteCookie(name) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    }
+
+    function persistChatSession(name, email, token = '') {
+        const data = JSON.stringify({ name, email, token, timestamp: Date.now() });
+        setCookie('portfolio_chat_user', data, 10);
+        try { localStorage.setItem('portfolio_chat_user', data); } catch (e) {}
+    }
+
+    function getStoredChatSession() {
+        try {
+            const raw = getCookie('portfolio_chat_user') || localStorage.getItem('portfolio_chat_user');
+            if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return null;
+    }
+
+    function clearChatSession() {
+        deleteCookie('portfolio_chat_user');
+        try { localStorage.removeItem('portfolio_chat_user'); } catch (e) {}
+    }
+
+    // --- TELEMETRY: VISITOR TRACKING (On Load) ---
+    try {
+        fetch(getBackendUrl('/api/telemetry/visit'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page: window.location.pathname })
+        }).catch(() => {});
+    } catch (e) {}
+
+    // 2-Way Chat Live Poller (Fetches Mithun's replies from Telegram)
+    let chatPollTimer = null;
+    const seenReplyIds = new Set();
+
+    async function fetchReplies(email) {
+        if (!email) return;
+        try {
+            const pollUrl = getBackendUrl(`/api/chat/poll?email=${encodeURIComponent(email)}`);
+            const res = await fetch(pollUrl);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.messages && Array.isArray(data.messages)) {
+                    data.messages.forEach(msg => {
+                        if (!seenReplyIds.has(msg.id)) {
+                            seenReplyIds.add(msg.id);
+                            appendMessage('received', msg.message);
+                        }
+                    });
+                }
+            }
+        } catch (err) {
+            // Ignore background polling glitches silently
+        }
+    }
+
+    function startChatPolling(email) {
+        if (!email) return;
+        if (chatPollTimer) clearInterval(chatPollTimer);
+        
+        // Immediate fetch upon entering chat
+        fetchReplies(email);
+
+        chatPollTimer = setInterval(() => {
+            if (!email || chatStepConvo.classList.contains('hidden')) return;
+            fetchReplies(email);
+        }, 1200);
+    }
+
+    async function enterConversationView(isReturning = false) {
+        chatStepIntro.classList.add('hidden');
+        chatStepConvo.classList.remove('hidden');
+        if (chatLogoutBtn) chatLogoutBtn.classList.remove('hidden');
+
+        if (isReturning) {
+            // Load conversation history
+            try {
+                const historyUrl = getBackendUrl(`/api/chat/history?email=${encodeURIComponent(chatUser.email)}`);
+                const res = await fetch(historyUrl);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.history && data.history.length > 0) {
+                        chatStream.innerHTML = '';
+                        data.history.forEach(item => {
+                            seenReplyIds.add(item.id);
+                            appendMessage(item.type, item.message);
+                        });
+                    } else {
+                        chatStream.innerHTML = '';
+                        appendMessage('received', `Welcome back ${chatUser.name}! Your verified 10-day session is active. What's on your mind?`);
+                    }
+                }
+            } catch (e) {
+                appendMessage('received', `Welcome back ${chatUser.name}! Reconnected to direct relay.`);
+            }
+        } else {
+            chatStream.innerHTML = '';
+            appendMessage('received', `Welcome ${chatUser.name}! Your email has been verified and connected to Mithun's direct relay. What would you like to discuss?`);
+        }
+
+        chatComposerInput.focus();
+        startChatPolling(chatUser.email);
+    }
+
+    // Restore existing verified session from Cookie / LocalStorage on boot
+    const storedSession = getStoredChatSession();
+    if (storedSession && storedSession.name && storedSession.email && storedSession.token) {
+        chatUser.name = storedSession.name;
+        chatUser.email = storedSession.email;
+        chatUser.token = storedSession.token;
+        enterConversationView(true);
+    }
+
+    // Step 1A: Onboarding Form Submit -> Send OTP
     if (chatOnboardingForm) {
-        chatOnboardingForm.addEventListener('submit', (e) => {
+        chatOnboardingForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            chatUser.name = chatInputName.value.trim();
-            chatUser.email = chatInputEmail.value.trim();
+            const name = chatInputName.value.trim();
+            const email = chatInputEmail.value.trim();
 
-            if (!chatUser.name || !chatUser.email) return;
+            if (!name || !email) return;
 
-            // Transition to Step 2
-            chatStepIntro.classList.add('hidden');
-            chatStepConvo.classList.remove('hidden');
+            pendingOtpUser = { name, email };
+            if (startChatBtn) {
+                startChatBtn.disabled = true;
+                startChatBtn.textContent = '[ SENDING CODE... ]';
+            }
 
-            // Personalize greeting
-            appendMessage('received', `Welcome ${chatUser.name}! I've connected our conversation to Mithun's direct relay. What would you like to discuss?`);
-            chatComposerInput.focus();
+            try {
+                const resp = await fetch(getBackendUrl('/api/otp/send'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email })
+                });
+
+                const data = await resp.json();
+                if (resp.ok && data.status === 'success') {
+                    // Transition to OTP verification step
+                    chatOnboardingForm.classList.add('hidden');
+                    chatOtpForm.classList.remove('hidden');
+                    if (otpTargetEmailDisplay) otpTargetEmailDisplay.textContent = email;
+                    if (chatInputOtp) {
+                        chatInputOtp.value = '';
+                        chatInputOtp.focus();
+                    }
+                    if (otpErrorMsg) otpErrorMsg.classList.add('hidden');
+                } else {
+                    alert(data.detail || 'Could not send verification code. Please try again.');
+                }
+            } catch (err) {
+                alert('Failed to connect to verification server. Please ensure the backend is active.');
+            } finally {
+                if (startChatBtn) {
+                    startChatBtn.disabled = false;
+                    startChatBtn.textContent = '[ SEND VERIFICATION CODE ]';
+                }
+            }
         });
     }
+
+    // Step 1B: OTP Form Submit -> Verify Code & Establish 10-Day Session
+    if (chatOtpForm) {
+        chatOtpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const otpCode = chatInputOtp ? chatInputOtp.value.trim() : '';
+            if (!otpCode || otpCode.length !== 6) {
+                if (otpErrorMsg) {
+                    otpErrorMsg.textContent = 'Please enter a valid 6-digit code.';
+                    otpErrorMsg.classList.remove('hidden');
+                }
+                return;
+            }
+
+            if (verifyOtpBtn) {
+                verifyOtpBtn.disabled = true;
+                verifyOtpBtn.textContent = '[ VERIFYING... ]';
+            }
+
+            try {
+                const resp = await fetch(getBackendUrl('/api/otp/verify'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: pendingOtpUser.name,
+                        email: pendingOtpUser.email,
+                        otp: otpCode
+                    })
+                });
+
+                const data = await resp.json();
+                if (resp.ok && data.verified) {
+                    // Success! Establish 10-day verified session
+                    chatUser.name = pendingOtpUser.name;
+                    chatUser.email = pendingOtpUser.email;
+                    chatUser.token = data.token || 'verified_token';
+                    persistChatSession(chatUser.name, chatUser.email, chatUser.token);
+
+                    // Reset forms
+                    chatOtpForm.classList.add('hidden');
+                    chatOnboardingForm.classList.remove('hidden');
+                    if (otpErrorMsg) otpErrorMsg.classList.add('hidden');
+
+                    // Enter live chat
+                    enterConversationView(false);
+                } else {
+                    if (otpErrorMsg) {
+                        otpErrorMsg.textContent = data.detail || 'Invalid verification code. Please try again.';
+                        otpErrorMsg.classList.remove('hidden');
+                    }
+                    if (chatInputOtp) {
+                        chatInputOtp.focus();
+                        chatInputOtp.select();
+                    }
+                }
+            } catch (err) {
+                if (otpErrorMsg) {
+                    otpErrorMsg.textContent = 'Connection error. Please try again.';
+                    otpErrorMsg.classList.remove('hidden');
+                }
+            } finally {
+                if (verifyOtpBtn) {
+                    verifyOtpBtn.disabled = false;
+                    verifyOtpBtn.textContent = '[ VERIFY & START CHAT ]';
+                }
+            }
+        });
+    }
+
+    // Resend OTP handler
+    if (resendOtpBtn) {
+        resendOtpBtn.addEventListener('click', async () => {
+            if (!pendingOtpUser.email) return;
+            resendOtpBtn.textContent = 'Sending...';
+            resendOtpBtn.disabled = true;
+            try {
+                await fetch(getBackendUrl('/api/otp/send'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(pendingOtpUser)
+                });
+                resendOtpBtn.textContent = 'Code Sent!';
+                setTimeout(() => {
+                    resendOtpBtn.textContent = 'Resend Code';
+                    resendOtpBtn.disabled = false;
+                }, 3000);
+            } catch (e) {
+                resendOtpBtn.textContent = 'Failed';
+                setTimeout(() => {
+                    resendOtpBtn.textContent = 'Resend Code';
+                    resendOtpBtn.disabled = false;
+                }, 2000);
+            }
+        });
+    }
+
+    // Change Email handler
+    if (changeEmailBtn) {
+        changeEmailBtn.addEventListener('click', () => {
+            chatOtpForm.classList.add('hidden');
+            chatOnboardingForm.classList.remove('hidden');
+            if (otpErrorMsg) otpErrorMsg.classList.add('hidden');
+            if (chatInputEmail) chatInputEmail.focus();
+        });
+    }
+
+    // Logout Button Handler
+    if (chatLogoutBtn) {
+        chatLogoutBtn.addEventListener('click', async () => {
+            const oldName = chatUser.name;
+            const oldEmail = chatUser.email;
+
+            // Send logout notification to Telegram
+            try {
+                fetch(getBackendUrl('/api/chat/status'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: oldName,
+                        email: oldEmail,
+                        action: 'logout'
+                    }),
+                    keepalive: true
+                });
+            } catch (err) {}
+
+            // Clear session & reset UI
+            clearChatSession();
+            chatUser = { name: '', email: '', token: '' };
+            pendingOtpUser = { name: '', email: '' };
+
+            if (chatPollTimer) clearInterval(chatPollTimer);
+            chatStepConvo.classList.add('hidden');
+            chatStepIntro.classList.remove('hidden');
+            chatLogoutBtn.classList.add('hidden');
+            chatOnboardingForm.classList.remove('hidden');
+            chatOtpForm.classList.add('hidden');
+            if (chatInputName) chatInputName.value = '';
+            if (chatInputEmail) chatInputEmail.value = '';
+            if (chatInputOtp) chatInputOtp.value = '';
+            chatStream.innerHTML = '';
+        });
+    }
+
+    // Page Reload / Unload Event Listener (Beacon to Telegram for Visit Exit & Chat Exit)
+    window.addEventListener('beforeunload', () => {
+        // 1. General visitor exit beacon
+        try {
+            navigator.sendBeacon(
+                getBackendUrl('/api/telemetry/exit'),
+                JSON.stringify({ page: window.location.pathname })
+            );
+        } catch (e) {}
+
+        // 2. Chat user session status beacon if logged in
+        if (chatUser.email && chatUser.name) {
+            try {
+                navigator.sendBeacon(
+                    getBackendUrl('/api/chat/status'),
+                    JSON.stringify({
+                        name: chatUser.name,
+                        email: chatUser.email,
+                        action: 'reload_or_exit'
+                    })
+                );
+            } catch (e) {}
+        }
+    });
 
     // Step 2: Message Sender
     if (chatSendForm) {
@@ -474,9 +819,12 @@ Memory Footprint: 210MB`,
             appendMessage('sent', messageText);
             chatComposerInput.value = '';
 
-            // Forward to FastAPI backend (which routes to Telegram)
+            // Ensure polling is active
+            startChatPolling(chatUser.email);
+
+            // Forward to FastAPI backend (which routes to Telegram with IP & Geo)
             try {
-                const apiUrl = window.location.origin.startsWith('http') ? '/api/chat' : 'http://localhost:8000/api/chat';
+                const apiUrl = getBackendUrl('/api/chat');
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -488,18 +836,11 @@ Memory Footprint: 210MB`,
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    setTimeout(() => {
-                        appendMessage('received', data.reply || "Thanks for your message! It has been dispatched directly to Mithun's Telegram.");
-                    }, 500);
-                } else {
-                    throw new Error('API unavailable');
+                    // Check for replies immediately
+                    setTimeout(() => fetchReplies(chatUser.email), 600);
                 }
             } catch (err) {
-                // Graceful fallback response when backend is offline or loading
-                setTimeout(() => {
-                    appendMessage('received', `Thanks ${chatUser.name}! Your message has been captured. Mithun will review and reply to ${chatUser.email} shortly.`);
-                }, 600);
+                console.log('[Chat Dispatch Error]:', err);
             }
         });
     }

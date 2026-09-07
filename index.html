@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Mithun | Portfolio 2026</title>
     <!-- Google Fonts: Plus Jakarta Sans for UI & JetBrains Mono for Code/Tech -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -577,17 +580,21 @@ class ChatHub:
                         <span class="chat-status-text">Instant Telegram Relay Connected</span>
                     </div>
                 </div>
-                <button type="button" class="chat-close-btn" id="chat-close-btn" aria-label="Close Chat">&times;</button>
+                <div class="chat-header-actions">
+                    <button type="button" class="chat-logout-btn hidden" id="chat-logout-btn" title="Log out of chat">[ Logout ]</button>
+                    <button type="button" class="chat-close-btn" id="chat-close-btn" aria-label="Close Chat">&times;</button>
+                </div>
             </div>
 
-            <!-- STEP 1: Entrance / Onboarding Form -->
+            <!-- STEP 1: Entrance / Onboarding & OTP Form -->
             <div id="chat-step-intro" class="chat-step-body">
                 <div class="chat-jane-stage">
                     <img src="res/chibi_jane/chat.png" alt="Chat Jane" class="chat-jane-intro-img">
                 </div>
                 <h4 class="chat-greeting-title">👋 Hello! How can I help you?</h4>
-                <p class="chat-greeting-sub">Leave your details and message. Your text gets instantly relayed to Mithun's Telegram.</p>
+                <p class="chat-greeting-sub" id="chat-greeting-sub">Verify your email with a one-time code to activate an instant direct chat relay with Mithun.</p>
 
+                <!-- Sub-step 1A: Name & Email Form -->
                 <form id="chat-onboarding-form" class="chat-form">
                     <div class="form-group">
                         <label for="chat-input-name">Your Name</label>
@@ -598,8 +605,29 @@ class ChatHub:
                         <input type="email" id="chat-input-email" required placeholder="e.g. alex@company.com" class="chat-field">
                     </div>
                     <button type="submit" class="btn btn-primary btn-block" id="start-chat-btn">
-                        [ START CHAT ]
+                        [ SEND VERIFICATION CODE ]
                     </button>
+                </form>
+
+                <!-- Sub-step 1B: OTP Verification Form (Hidden until OTP requested) -->
+                <form id="chat-otp-form" class="chat-form hidden">
+                    <div class="otp-notice-box">
+                        <span>A 6-digit code was sent to:</span>
+                        <strong id="otp-target-email-display">user@example.com</strong>
+                    </div>
+                    <div class="form-group">
+                        <label for="chat-input-otp">6-Digit Verification Code</label>
+                        <input type="text" id="chat-input-otp" required maxlength="6" pattern="[0-9]{6}" placeholder="------" class="chat-field otp-code-input" autocomplete="one-time-code" inputmode="numeric">
+                    </div>
+                    <div id="otp-error-msg" class="otp-error-msg hidden">Invalid verification code. Please try again.</div>
+                    <button type="submit" class="btn btn-primary btn-block" id="verify-otp-btn">
+                        [ VERIFY &amp; START CHAT ]
+                    </button>
+                    <div class="otp-action-links">
+                        <button type="button" class="text-link-btn" id="resend-otp-btn">Resend Code</button>
+                        <span class="sep-dot">&bull;</span>
+                        <button type="button" class="text-link-btn" id="change-email-btn">Change Email</button>
+                    </div>
                 </form>
             </div>
 
@@ -629,7 +657,7 @@ class ChatHub:
     </div>
 
     <!-- Scripts -->
-    <script src="js/animations.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/animations.js?v=2.4"></script>
+    <script src="js/main.js?v=2.4"></script>
 </body>
 </html>

@@ -2,7 +2,10 @@
 res/chibi_jane/.data.txt
 res/.idea.docx
 .env
+.env.*
 backend/.env
+backend/.env.*
+*.env
 backend/messages.json
 __pycache__/
 backend/__pycache__/

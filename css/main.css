@@ -1502,6 +1502,31 @@ code, pre, .stat-number, .tech-chip, .skill-pill, .badge-tag, .section-tag, .pro
     display: block;
 }
 
+.chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat-logout-btn {
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chat-logout-btn:hover {
+    color: #ef4444;
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+}
+
 .chat-close-btn {
     background: transparent;
     border: none;
@@ -1580,6 +1605,74 @@ code, pre, .stat-number, .tech-chip, .skill-pill, .badge-tag, .section-tag, .pro
 
 .chat-field:focus {
     border-color: var(--border-focus);
+}
+
+/* OTP Verification Styles */
+.otp-notice-box {
+    font-size: 0.82rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+#otp-target-email-display {
+    display: block;
+    color: var(--accent-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.86rem;
+    margin-top: 4px;
+    word-break: break-all;
+}
+
+.otp-code-input {
+    text-align: center;
+    letter-spacing: 12px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 10px;
+}
+
+.otp-error-msg {
+    color: #ef4444;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    margin-top: -6px;
+    margin-bottom: 4px;
+}
+
+.otp-action-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.text-link-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: inherit;
+    transition: color 0.2s;
+    padding: 4px;
+}
+
+.text-link-btn:hover {
+    color: var(--accent-primary);
+}
+
+.sep-dot {
+    color: var(--text-muted);
+    font-size: 0.8rem;
 }
 
 /* Step 2: Message Stream */
