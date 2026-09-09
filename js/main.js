@@ -1003,6 +1003,9 @@ Memory Footprint: 210MB`,
         if (!adminDashboardOverlay) return;
         adminDashboardOverlay.classList.add('hidden');
         adminDashboardOverlay.setAttribute('aria-hidden', 'true');
+        if (adminChatWorkstation) {
+            adminChatWorkstation.classList.remove('mobile-show-thread');
+        }
         stopAdminPolling();
     }
 
