@@ -6,6 +6,7 @@ import time
 import random
 import smtplib
 import asyncio
+import hmac
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -17,6 +18,8 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import httpx
 from dotenv import load_dotenv
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 # Load environment variables
 load_dotenv()
@@ -24,7 +27,7 @@ load_dotenv()
 app = FastAPI(
     title="Mithun Portfolio API",
     description="Full-stack service for Mithun's 2026 Portfolio with 2-Way Telegram Chat, Telemetry, and OTP Verification",
-    version="2.3.0"
+    version="2.4.0"
 )
 
 # CORS Middleware
@@ -49,12 +52,8 @@ async def add_no_cache_headers(request: Request, call_next):
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
-# Resend Email API Settings
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
-RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "Mithun Portfolio <onboarding@resend.dev>").strip()
-
-# Optional SMTP Settings for Email delivery
-SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
+# SMTP Settings for Email OTP Delivery
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "").strip()
 SMTP_PASS = os.getenv("SMTP_PASS", "").strip()
@@ -64,17 +63,54 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 MESSAGES_LOG_PATH = os.path.join(BASE_DIR, "messages.json")
 
+# Firebase Cloud Firestore Settings & Safe Backend Initialization
+FIREBASE_SERVICE_ACCOUNT_PATH = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "").strip()
+
+firestore_db = None
+try:
+    sa_path = FIREBASE_SERVICE_ACCOUNT_PATH
+    if not sa_path:
+        sa_path = os.path.join(BASE_DIR, "firebase_service_account.json")
+    elif not os.path.isabs(sa_path):
+        p1 = os.path.join(ROOT_DIR, sa_path)
+        p2 = os.path.join(BASE_DIR, sa_path)
+        sa_path = p1 if os.path.exists(p1) else p2
+
+    if os.path.exists(sa_path):
+        cred = credentials.Certificate(sa_path)
+        if not firebase_admin._apps:
+            firebase_admin.initialize_app(cred)
+        firestore_db = firestore.client()
+        print(f"[Firestore] Successfully initialized Firebase Admin for project: {firestore_db.project}")
+    else:
+        print(f"[Firestore Notice] Service account not found at {sa_path}. Firestore logging disabled.")
+except Exception as e:
+    print(f"[Firestore Init Error]: {e}")
+
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "").strip()
+
 # In-memory stores
 outbound_replies: dict[str, list[dict]] = {}
 otp_store: dict[str, dict] = {}           # email -> { "otp": str, "name": str, "expires_at": float }
 verified_sessions: dict[str, dict] = {}   # email -> { "token": str, "name": str, "expires_at": float }
+admin_sessions: dict[str, float] = {}     # admin_token -> expires_at
 recent_telemetry_visits: dict[str, float] = {} # ip -> last_visit_timestamp
 
 def save_chat_id_to_env(chat_id: str):
     """Saves discovered chat ID to gitignored .env files while preserving other keys."""
     for env_path in [os.path.join(ROOT_DIR, ".env"), os.path.join(BASE_DIR, ".env")]:
         try:
-            content = f"TELEGRAM_BOT_TOKEN={TELEGRAM_BOT_TOKEN}\nTELEGRAM_CHAT_ID={chat_id}\nRESEND_API_KEY={RESEND_API_KEY}\n"
+            content = (
+                f"TELEGRAM_BOT_TOKEN={TELEGRAM_BOT_TOKEN}\n"
+                f"TELEGRAM_CHAT_ID={chat_id}\n"
+                f"SMTP_HOST={SMTP_HOST}\n"
+                f"SMTP_PORT={SMTP_PORT}\n"
+                f"SMTP_USER={SMTP_USER}\n"
+                f"SMTP_PASS={SMTP_PASS}\n"
+                f"SMTP_FROM={SMTP_FROM}\n"
+                f"FIREBASE_SERVICE_ACCOUNT_PATH={FIREBASE_SERVICE_ACCOUNT_PATH or 'backend/firebase_service_account.json'}\n"
+                f"ADMIN_PASSWORD={ADMIN_PASSWORD}\n"
+            )
             with open(env_path, "w", encoding="utf-8") as f:
                 f.write(content)
         except Exception as e:
@@ -151,19 +187,22 @@ async def get_ip_location(ip: str) -> dict:
         "isp": ""
     }
 
-async def send_telegram_msg(text: str) -> bool:
-    """Sends formatted notification to Mithun's Telegram."""
+async def send_telegram_msg(text: str, reply_markup: Optional[dict] = None) -> bool:
+    """Sends formatted notification to Mithun's Telegram with optional inline buttons or ForceReply."""
     chat_id = await resolve_chat_id()
     if not TELEGRAM_BOT_TOKEN or not chat_id:
         return False
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "Markdown"
+    }
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
     try:
         async with httpx.AsyncClient(timeout=8.0) as client:
-            resp = await client.post(url, json={
-                "chat_id": chat_id,
-                "text": text,
-                "parse_mode": "Markdown"
-            })
+            resp = await client.post(url, json=payload)
             return resp.status_code == 200
     except Exception as e:
         print(f"[Telegram Error]: {e}")
@@ -193,6 +232,88 @@ def save_local_message(name: str, email: str, message: str, direction: str = "in
     with open(MESSAGES_LOG_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
+# ============================================================================
+# CLOUD FIRESTORE LOGGING HELPERS (Non-blocking & Error Resilient)
+# ============================================================================
+def _sync_add_firestore_doc(collection_name: str, data: dict) -> bool:
+    """Synchronous worker to write a document to Firestore with SERVER_TIMESTAMP."""
+    if firestore_db is None:
+        return False
+    try:
+        payload = {**data, "timestamp": firestore.SERVER_TIMESTAMP}
+        firestore_db.collection(collection_name).add(payload)
+        return True
+    except Exception as e:
+        print(f"[Firestore Write Error] Failed to write to '{collection_name}': {e}")
+        return False
+
+async def record_firestore_event(collection_name: str, data: dict) -> bool:
+    """Asynchronously dispatches Firestore document creation without blocking."""
+    if firestore_db is None:
+        return False
+    try:
+        return await asyncio.to_thread(_sync_add_firestore_doc, collection_name, data)
+    except Exception as e:
+        print(f"[Firestore Async Error]: {e}")
+        return False
+
+async def log_activity(
+    action: str,
+    request: Optional[Request] = None,
+    ip: str = "",
+    location: str = "",
+    geo_data: Optional[dict] = None,
+    email: Optional[str] = None,
+    name: Optional[str] = None,
+    page: str = "/"
+):
+    """Helper to log website activity into the 'logs' Firestore collection."""
+    geo = geo_data or {}
+    user_agent = "Unknown"
+    if request:
+        user_agent = request.headers.get("user-agent", "Unknown")
+
+    log_doc = {
+        "action": action,
+        "ip": ip or geo.get("public_ip") or "Unknown",
+        "location": location or geo.get("location_str") or "Unknown Location",
+        "city": geo.get("city", ""),
+        "region": geo.get("region", ""),
+        "country": geo.get("country", ""),
+        "isp": geo.get("isp", ""),
+        "user_agent": user_agent,
+        "page": page
+    }
+    if email:
+        log_doc["email"] = email
+    if name:
+        log_doc["name"] = name
+
+    await record_firestore_event("logs", log_doc)
+
+async def log_chat(
+    action: str,
+    email: str,
+    name: str,
+    message: str,
+    reply_by: str,
+    ip: str,
+    location: str,
+    user_agent: str = "Unknown"
+):
+    """Helper to log chat activity into the 'chat' Firestore collection."""
+    chat_doc = {
+        "action": action,
+        "email": email,
+        "name": name,
+        "message": message,
+        "reply_by": reply_by,
+        "ip": ip,
+        "location": location,
+        "user_agent": user_agent
+    }
+    await record_firestore_event("chat", chat_doc)
+
 async def resolve_chat_id() -> Optional[str]:
     """Returns TELEGRAM_CHAT_ID from env, or queries Telegram getUpdates to auto-detect it."""
     global TELEGRAM_CHAT_ID
@@ -220,106 +341,75 @@ async def resolve_chat_id() -> Optional[str]:
     
     return None
 
-async def send_resend_email(to_email: str, name: str, otp_code: str) -> tuple[bool, Optional[str]]:
-    """Sends OTP verification code via Resend API directly to visitor's email."""
-    if not RESEND_API_KEY:
-        return False, "Resend API key not configured"
-
-    url = "https://api.resend.com/emails"
-    headers = {
-        "Authorization": f"Bearer {RESEND_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head><meta charset="utf-8"></head>
-    <body style="margin:0;padding:0;background-color:#0b0f19;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#0b0f19;padding:40px 20px;">
-        <tr>
-          <td align="center">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:500px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:32px;color:#f8fafc;box-shadow:0 12px 30px rgba(0,0,0,0.5);">
-              <tr>
-                <td>
-                  <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#38bdf8;margin-bottom:8px;text-transform:uppercase;">Mithun Portfolio // Security</div>
-                  <h1 style="font-size:22px;font-weight:700;color:#ffffff;margin:0 0 16px 0;">Verify Your Email</h1>
-                  <p style="font-size:15px;color:#94a3b8;line-height:1.6;margin:0 0 24px 0;">
-                    Hello <strong style="color:#ffffff;">{name}</strong>,<br>
-                    Use the following one-time code to activate your direct 10-day chat session with Mithun:
-                  </p>
-                  <div style="background:rgba(56,189,248,0.08);border:1px dashed rgba(56,189,248,0.4);border-radius:12px;padding:20px;text-align:center;margin:0 0 24px 0;">
-                    <span style="font-family:'Courier New',Courier,monospace;font-size:36px;font-weight:700;letter-spacing:10px;color:#38bdf8;">{otp_code}</span>
-                  </div>
-                  <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 24px 0;">
-                    This code is valid for <strong>10 minutes</strong>. If you did not request this verification code, you can safely ignore this email.
-                  </p>
-                  <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;font-size:12px;color:#475569;">
-                    &copy; 2026 Mithun &bull; Full-Stack Portfolio &amp; Direct Telegram Relay
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-    """
-    payload = {
-        "from": RESEND_FROM_EMAIL,
-        "to": [to_email],
-        "subject": f"{otp_code} is your Mithun Portfolio Verification Code",
-        "html": html_content
-    }
-
-    try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            resp = await client.post(url, headers=headers, json=payload)
-            if resp.status_code in (200, 201):
-                return True, None
-            else:
-                try:
-                    data = resp.json()
-                    err_msg = data.get("message") or resp.text
-                except Exception:
-                    err_msg = resp.text
-                print(f"[Resend Error {resp.status_code}]: {err_msg}")
-                return False, err_msg
-    except Exception as e:
-        print(f"[Resend Exception]: {e}")
-        return False, str(e)
-
-def send_smtp_email(to_email: str, name: str, otp_code: str):
-    """Sends OTP code via SMTP if configured."""
+def _send_smtp_sync(to_email: str, name: str, otp_code: str) -> tuple[bool, Optional[str]]:
+    """Synchronous worker to send OTP verification email via SMTP."""
     if not (SMTP_HOST and SMTP_USER and SMTP_PASS):
-        return False
+        return False, "SMTP credentials not configured"
     try:
-        msg = MIMEMultipart()
+        msg = MIMEMultipart("alternative")
         msg["From"] = f"Mithun Portfolio <{SMTP_FROM}>"
         msg["To"] = to_email
         msg["Subject"] = f"{otp_code} is your Mithun Portfolio Verification Code"
         
-        body = f"""Hello {name},
-
-Your one-time verification code for chatting on Mithun's Developer Portfolio is:
-
-  {otp_code}
-
-This code expires in 10 minutes. Please enter it to activate your 10-day verified chat session.
-
-Best regards,
-Mithun Portfolio Relay
+        plain_body = (
+            f"Hello {name},\n\n"
+            f"Your one-time verification code for chatting on Mithun's Developer Portfolio is:\n\n"
+            f"  {otp_code}\n\n"
+            f"This code expires in 10 minutes. Enter it on the website to activate your 10-day verified session.\n\n"
+            f"Best regards,\n"
+            f"Mithun Portfolio Relay"
+        )
+        
+        html_body = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#0b0f19;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#0b0f19;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:500px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:32px;color:#f8fafc;box-shadow:0 12px 30px rgba(0,0,0,0.5);">
+          <tr>
+            <td>
+              <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#38bdf8;margin-bottom:8px;text-transform:uppercase;">Mithun Portfolio // Security</div>
+              <h1 style="font-size:22px;font-weight:700;color:#ffffff;margin:0 0 16px 0;">Verify Your Email</h1>
+              <p style="font-size:15px;color:#94a3b8;line-height:1.6;margin:0 0 24px 0;">
+                Hello <strong style="color:#ffffff;">{name}</strong>,<br>
+                Use the following one-time code to activate your direct 10-day chat session with Mithun:
+              </p>
+              <div style="background:rgba(56,189,248,0.08);border:1px dashed rgba(56,189,248,0.4);border-radius:12px;padding:20px;text-align:center;margin:0 0 24px 0;">
+                <span style="font-family:'Courier New',Courier,monospace;font-size:36px;font-weight:700;letter-spacing:10px;color:#38bdf8;">{otp_code}</span>
+              </div>
+              <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 24px 0;">
+                This code is valid for <strong>10 minutes</strong>. If you did not request this verification code, you can safely ignore this email.
+              </p>
+              <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;font-size:12px;color:#475569;">
+                &copy; 2026 Mithun &bull; Full-Stack Portfolio &amp; Direct Telegram Relay
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
 """
-        msg.attach(MIMEText(body, "plain"))
-        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=8)
+        msg.attach(MIMEText(plain_body, "plain", "utf-8"))
+        msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
         server.send_message(msg)
         server.quit()
-        return True
+        return True, None
     except Exception as e:
         print(f"[SMTP Send Error]: {e}")
-        return False
+        return False, str(e)
+
+async def send_smtp_email(to_email: str, name: str, otp_code: str) -> tuple[bool, Optional[str]]:
+    """Asynchronously dispatches OTP verification email via SMTP."""
+    return await asyncio.to_thread(_send_smtp_sync, to_email, name, otp_code)
 
 # ============================================================================
 # TELEGRAM POLLING WORKER (Listens for Mithun's replies to post in web chat)
@@ -361,9 +451,9 @@ async def telegram_polling_worker():
                         target_email = None
                         reply_content = None
 
-                        # Pattern 1: @<email> <message> or @email <message>
+                        # Pattern 1: @<email> <message> or @bot_name @<email> <message>
                         email_prefix_match = re.search(
-                            r"^@\s*<?([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)>?\s*(.*)",
+                            r"^(?:@\w+\s+)?@\s*<?([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)>?\s*(.*)",
                             text,
                             re.DOTALL
                         )
@@ -417,6 +507,18 @@ async def telegram_polling_worker():
                             )
                             await send_telegram_msg(ack_text)
 
+                            # Record reply event in Firestore chat collection
+                            await log_chat(
+                                action="reply",
+                                email=target_email,
+                                name="Mithun",
+                                message=reply_content,
+                                reply_by=f"@{target_email}",
+                                ip="Telegram",
+                                location="Mithun Relay",
+                                user_agent="Telegram Bot"
+                            )
+
         except asyncio.CancelledError:
             break
         except Exception as e:
@@ -454,6 +556,10 @@ class TelemetryRequest(BaseModel):
     session_id: Optional[str] = None
     page: Optional[str] = "/"
 
+class ResumeTrackRequest(BaseModel):
+    action: Optional[str] = "resume_download"
+    page: Optional[str] = "/#resume"
+
 # ============================================================================
 # TELEMETRY ENDPOINTS (Visitor Location & Exit Tracking)
 # ============================================================================
@@ -480,6 +586,16 @@ async def track_visit(payload: TelemetryRequest, request: Request):
         )
         await send_telegram_msg(log_text)
 
+        # Record event in Firestore logs collection
+        await log_activity(
+            action="visited",
+            request=request,
+            ip=ip_display,
+            location=loc_display,
+            geo_data=geo_data,
+            page=payload.page or "/"
+        )
+
     return {"status": "ok", "location": loc_display, "ip": ip_display}
 
 @app.post("/api/telemetry/exit")
@@ -499,6 +615,46 @@ async def track_exit(payload: TelemetryRequest, request: Request):
         f"*loc:* {loc_display}*}}*"
     )
     await send_telegram_msg(log_text)
+
+    # Record event in Firestore logs collection
+    await log_activity(
+        action="exit",
+        request=request,
+        ip=ip_display,
+        location=loc_display,
+        geo_data=geo_data,
+        page=payload.page or "/"
+    )
+    return {"status": "ok"}
+
+@app.post("/api/telemetry/resume")
+async def track_resume(request: Request, payload: Optional[ResumeTrackRequest] = None):
+    """Tracks when a visitor downloads or views Mithun's resume."""
+    client_ip = get_client_ip(request)
+    geo_data = await get_ip_location(client_ip)
+    ip_display = geo_data.get("public_ip") or client_ip
+    loc_display = geo_data.get("location_str") or "Unknown Location"
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    page_val = payload.page if payload and payload.page else "/#resume"
+    log_text = (
+        f"🌐 *{{log*\n"
+        f"*action:* resume_download\n"
+        f"*timestamp:* {now_str}\n"
+        f"*ip:* {ip_display}\n"
+        f"*loc:* {loc_display}*}}*"
+    )
+    await send_telegram_msg(log_text)
+
+    # Record event in Firestore logs collection
+    await log_activity(
+        action="resume_download",
+        request=request,
+        ip=ip_display,
+        location=loc_display,
+        geo_data=geo_data,
+        page=page_val
+    )
     return {"status": "ok"}
 
 # ============================================================================
@@ -506,7 +662,7 @@ async def track_exit(payload: TelemetryRequest, request: Request):
 # ============================================================================
 @app.post("/api/otp/send")
 async def send_otp(payload: OtpSendRequest, request: Request):
-    """Generates 6-digit OTP and dispatches directly to visitor's email via Resend."""
+    """Generates 6-digit OTP and dispatches directly to visitor's email via SMTP."""
     name = payload.name.strip()
     email = payload.email.lower().strip()
     if not name or not email or "@" not in email:
@@ -522,15 +678,8 @@ async def send_otp(payload: OtpSendRequest, request: Request):
         "attempts": 0
     }
 
-    # 1. Attempt delivery directly to visitor's email inbox via Resend
-    email_delivered, error_reason = await send_resend_email(email, name, otp_code)
-
-    # 2. Fallback to SMTP if Resend fails and SMTP is configured
-    if not email_delivered and SMTP_HOST:
-        smtp_sent = send_smtp_email(email, name, otp_code)
-        if smtp_sent:
-            email_delivered = True
-            error_reason = None
+    # Dispatch OTP directly to visitor's email inbox via SMTP
+    email_delivered, error_reason = await send_smtp_email(email, name, otp_code)
 
     client_ip = get_client_ip(request)
     geo_data = await get_ip_location(client_ip)
@@ -541,7 +690,7 @@ async def send_otp(payload: OtpSendRequest, request: Request):
     # If email delivery succeeded:
     # Do NOT send OTP code to Telegram! The code remains completely private to the visitor.
     if email_delivered:
-        print(f"[OTP Dispatch] Successfully sent OTP code via Resend to {email}")
+        print(f"[OTP Dispatch] Successfully sent OTP code via SMTP to {email}")
         return {
             "status": "success",
             "message": "Verification code sent directly to your email inbox.",
@@ -549,7 +698,7 @@ async def send_otp(payload: OtpSendRequest, request: Request):
             "email_delivered": True
         }
 
-    # If email delivery failed (e.g. Resend free test mode restriction on unverified external domains):
+    # If email delivery failed:
     # Dispatch fallback security alert to Telegram so development and testing are not blocked
     telegram_fallback_alert = (
         f"🔐 *{{security - otp fallback*\n"
@@ -558,7 +707,7 @@ async def send_otp(payload: OtpSendRequest, request: Request):
         f"*user:* {name}\n"
         f"*email:* `{email}`\n"
         f"*otp_code:* `{otp_code}`\n"
-        f"*notice:* Resend test mode: verify domain at resend.com to send to public emails\n"
+        f"*notice:* SMTP delivery error: {error_reason}\n"
         f"*ip:* {ip_display}\n"
         f"*loc:* {loc_display}*}}*"
     )
@@ -621,6 +770,29 @@ async def verify_otp(payload: OtpVerifyRequest, request: Request):
     )
     await send_telegram_msg(chat_login_alert)
 
+    # Record login event in Firestore chat and logs collections
+    user_agent = request.headers.get("user-agent", "Unknown")
+    await log_chat(
+        action="logged in",
+        email=email,
+        name=payload.name,
+        message="User verified email OTP and activated 10-day chat session",
+        reply_by=f"@{email}",
+        ip=ip_display,
+        location=loc_display,
+        user_agent=user_agent
+    )
+    await log_activity(
+        action="login",
+        request=request,
+        ip=ip_display,
+        location=loc_display,
+        geo_data=geo_data,
+        email=email,
+        name=payload.name,
+        page="/#chat"
+    )
+
     return {
         "status": "success",
         "verified": True,
@@ -652,7 +824,7 @@ async def handle_chat_message(payload: ChatMessageRequest, request: Request):
         location=loc_display
     )
 
-    # Format Telegram message matching exact requested template
+    # Format Telegram message matching exact requested template (with tap-to-copy email code)
     telegram_text = (
         f"💬 *{{chat*\n"
         f"*action:* message\n"
@@ -660,9 +832,27 @@ async def handle_chat_message(payload: ChatMessageRequest, request: Request):
         f"*ip:* {ip_display}\n"
         f"*location:* {loc_display}\n"
         f"*messege:* {payload.message}\n"
-        f"*reply by:* @{payload.email}*}}*"
+        f"*reply by:* `@{payload.email}`*}}*"
     )
-    delivered = await send_telegram_msg(telegram_text)
+    # Auto-activate Telegram native reply bar so Mithun can reply immediately without copying
+    reply_markup = {
+        "force_reply": True,
+        "input_field_placeholder": f"Reply to {payload.name}..."
+    }
+    delivered = await send_telegram_msg(telegram_text, reply_markup=reply_markup)
+
+    # Record message in Firestore chat collection
+    user_agent = request.headers.get("user-agent", "Unknown")
+    await log_chat(
+        action="message",
+        email=payload.email,
+        name=payload.name,
+        message=payload.message,
+        reply_by=f"@{payload.email}",
+        ip=ip_display,
+        location=loc_display,
+        user_agent=user_agent
+    )
 
     return {
         "status": "success",
@@ -692,6 +882,31 @@ async def handle_chat_status(payload: ChatStatusRequest, request: Request):
         f"*reply by:* @{payload.email}*}}*"
     )
     await send_telegram_msg(status_text)
+
+    # Record status in Firestore chat and logs collections
+    user_agent = request.headers.get("user-agent", "Unknown")
+    await log_chat(
+        action=action_label,
+        email=payload.email,
+        name=payload.name,
+        message=msg_label,
+        reply_by=f"@{payload.email}",
+        ip=ip_display,
+        location=loc_display,
+        user_agent=user_agent
+    )
+    if payload.action == "logout":
+        await log_activity(
+            action="logout",
+            request=request,
+            ip=ip_display,
+            location=loc_display,
+            geo_data=geo_data,
+            email=payload.email,
+            name=payload.name,
+            page="/#chat"
+        )
+
     return {"status": "ok"}
 
 @app.get("/api/chat/poll")
@@ -733,6 +948,362 @@ async def get_chat_history(email: str):
             print(f"[History Error]: {e}")
 
     return {"status": "success", "history": history}
+
+# ============================================================================
+# ADMIN DASHBOARD ENDPOINTS (Authenticated & Server-Side Firestore Access)
+# ============================================================================
+class AdminLoginRequest(BaseModel):
+    password: str
+
+class AdminReplyRequest(BaseModel):
+    email: str
+    message: str
+
+def require_admin(request: Request) -> str:
+    """Verifies that the incoming request has a valid, non-expired admin session token."""
+    auth_header = request.headers.get("x-admin-token") or request.headers.get("authorization", "")
+    token = auth_header.replace("Bearer ", "").strip()
+    if not token or token not in admin_sessions:
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid or expired admin session")
+    if time.time() > admin_sessions[token]:
+        admin_sessions.pop(token, None)
+        raise HTTPException(status_code=401, detail="Unauthorized: Admin session has expired")
+    return token
+
+@app.post("/api/admin/login")
+async def admin_login(payload: AdminLoginRequest):
+    """Validates admin password and generates an isolated 12-hour admin session token."""
+    if not ADMIN_PASSWORD:
+        raise HTTPException(status_code=500, detail="Admin authentication is not configured on server")
+    pwd = payload.password.strip()
+    if not hmac.compare_digest(pwd, ADMIN_PASSWORD):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    
+    session_token = str(uuid.uuid4())
+    admin_sessions[session_token] = time.time() + (12 * 3600)
+    return {
+        "status": "success",
+        "token": session_token,
+        "expires_in_hours": 12
+    }
+
+@app.post("/api/admin/logout")
+async def admin_logout(request: Request):
+    """Invalidates the admin session token immediately."""
+    auth_header = request.headers.get("x-admin-token") or request.headers.get("authorization", "")
+    token = auth_header.replace("Bearer ", "").strip()
+    if token in admin_sessions:
+        admin_sessions.pop(token, None)
+    return {"status": "success", "message": "Admin session terminated"}
+
+@app.get("/api/admin/session")
+async def check_admin_session(request: Request):
+    """Validates if the active admin session is still valid."""
+    require_admin(request)
+    return {"status": "authenticated"}
+
+@app.get("/api/admin/chats")
+async def get_admin_chats(request: Request):
+    """Returns WhatsApp-style conversations grouped by visitor from Firestore."""
+    require_admin(request)
+    conversations: dict[str, dict] = {}
+
+    # Query Firestore chat collection
+    if firestore_db:
+        try:
+            docs = list(firestore_db.collection("chat").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(300).stream())
+            for doc in docs:
+                data = doc.to_dict()
+                email = (data.get("email") or "").lower().strip()
+                if not email or "@" not in email:
+                    continue
+
+                ts = data.get("timestamp")
+                ts_iso = ""
+                ts_epoch = 0.0
+                time_str = ""
+                if hasattr(ts, "isoformat"):
+                    ts_iso = ts.isoformat()
+                    ts_epoch = ts.timestamp()
+                    time_str = ts.strftime("%I:%M %p")
+                elif isinstance(ts, (int, float)):
+                    ts_epoch = float(ts)
+                    time_str = datetime.fromtimestamp(ts_epoch).strftime("%I:%M %p")
+
+                name = data.get("name") or "Visitor"
+                action = data.get("action") or "message"
+                msg_text = data.get("message") or ""
+                loc = data.get("location") or "Unknown Location"
+                ip = data.get("ip") or "Unknown"
+
+                if email not in conversations:
+                    conversations[email] = {
+                        "email": email,
+                        "name": name if name != "Mithun" else "Visitor",
+                        "location": loc if loc != "Mithun Relay" else "",
+                        "ip": ip if ip != "Telegram" else "",
+                        "last_message": msg_text,
+                        "last_action": action,
+                        "last_timestamp": ts_iso,
+                        "last_epoch": ts_epoch,
+                        "last_time_str": time_str,
+                        "last_sender": "Mithun" if (action == "reply" or name == "Mithun") else "visitor",
+                        "messages_count": 1,
+                        "online": email in verified_sessions and verified_sessions[email].get("expires_at", 0) > time.time()
+                    }
+                else:
+                    conv = conversations[email]
+                    conv["messages_count"] += 1
+                    if conv["name"] in ("Visitor", "") and name not in ("Mithun", "Visitor"):
+                        conv["name"] = name
+                    if not conv["location"] and loc != "Mithun Relay":
+                        conv["location"] = loc
+                    if not conv["ip"] and ip != "Telegram":
+                        conv["ip"] = ip
+        except Exception as e:
+            print(f"[Admin Chats Error]: {e}")
+
+    # Fallback/supplement from local messages.json
+    if os.path.exists(MESSAGES_LOG_PATH):
+        try:
+            with open(MESSAGES_LOG_PATH, "r", encoding="utf-8") as f:
+                local_msgs = json.load(f)
+            for m in reversed(local_msgs):
+                email = (m.get("email") or "").lower().strip()
+                if not email or "@" not in email:
+                    continue
+                if email not in conversations:
+                    name = m.get("name", "Visitor")
+                    conversations[email] = {
+                        "email": email,
+                        "name": name if "Mithun" not in name else "Visitor",
+                        "location": m.get("location", "Unknown Location"),
+                        "ip": m.get("ip", "Unknown"),
+                        "last_message": m.get("message", ""),
+                        "last_action": "message",
+                        "last_timestamp": m.get("timestamp", ""),
+                        "last_epoch": 0.0,
+                        "last_time_str": "",
+                        "last_sender": "Mithun" if m.get("direction") == "outbound" else "visitor",
+                        "messages_count": 1,
+                        "online": email in verified_sessions and verified_sessions[email].get("expires_at", 0) > time.time()
+                    }
+        except Exception:
+            pass
+
+    chat_list = sorted(conversations.values(), key=lambda x: x["last_epoch"], reverse=True)
+    return {"status": "success", "chats": chat_list}
+
+@app.get("/api/admin/chat/{email:path}")
+async def get_admin_chat_thread(email: str, request: Request):
+    """Returns chronological conversation history between Mithun and a specific visitor."""
+    require_admin(request)
+    clean_email = email.lower().strip()
+    messages = []
+    visitor_info = {
+        "email": clean_email,
+        "name": "Visitor",
+        "location": "Unknown Location",
+        "ip": "Unknown",
+        "online": clean_email in verified_sessions and verified_sessions[clean_email].get("expires_at", 0) > time.time()
+    }
+
+    if firestore_db:
+        try:
+            docs = list(firestore_db.collection("chat").where("email", "==", clean_email).stream())
+            def get_doc_epoch(d):
+                data = d.to_dict()
+                ts = data.get("timestamp")
+                if hasattr(ts, "timestamp"):
+                    return ts.timestamp()
+                elif isinstance(ts, (int, float)):
+                    return float(ts)
+                return 0.0
+
+            docs.sort(key=get_doc_epoch)
+            for doc in docs:
+                d = doc.to_dict()
+                ts = d.get("timestamp")
+                ts_str = ""
+                if hasattr(ts, "strftime"):
+                    ts_str = ts.strftime("%b %d, %I:%M %p")
+                elif isinstance(ts, (int, float)):
+                    ts_str = datetime.fromtimestamp(ts).strftime("%b %d, %I:%M %p")
+
+                name = d.get("name") or "Visitor"
+                action = d.get("action") or "message"
+                is_admin_reply = (action == "reply" or name == "Mithun")
+
+                if not is_admin_reply and name not in ("Visitor", ""):
+                    visitor_info["name"] = name
+                if d.get("location") and d.get("location") != "Mithun Relay":
+                    visitor_info["location"] = d.get("location")
+                if d.get("ip") and d.get("ip") != "Telegram":
+                    visitor_info["ip"] = d.get("ip")
+
+                messages.append({
+                    "id": doc.id,
+                    "action": action,
+                    "sender": "Mithun" if is_admin_reply else (name or "Visitor"),
+                    "is_admin": is_admin_reply,
+                    "message": d.get("message", ""),
+                    "timestamp": ts_str,
+                    "reply_by": d.get("reply_by", "")
+                })
+        except Exception as e:
+            print(f"[Admin Thread Error]: {e}")
+
+    # Fallback to local messages if needed
+    if not messages and os.path.exists(MESSAGES_LOG_PATH):
+        try:
+            with open(MESSAGES_LOG_PATH, "r", encoding="utf-8") as f:
+                local_msgs = json.load(f)
+            for m in local_msgs:
+                if (m.get("email") or "").lower().strip() == clean_email:
+                    is_out = m.get("direction") == "outbound"
+                    messages.append({
+                        "id": m.get("id", str(uuid.uuid4())),
+                        "action": "reply" if is_out else "message",
+                        "sender": "Mithun" if is_out else m.get("name", "Visitor"),
+                        "is_admin": is_out,
+                        "message": m.get("message", ""),
+                        "timestamp": m.get("timestamp", ""),
+                        "reply_by": f"@{clean_email}"
+                    })
+        except Exception:
+            pass
+
+    return {
+        "status": "success",
+        "visitor": visitor_info,
+        "messages": messages
+    }
+
+@app.post("/api/admin/chat/reply")
+async def admin_send_reply(payload: AdminReplyRequest, request: Request):
+    """Dispatches reply from Admin Dashboard to visitor's active session, Firestore, and Telegram."""
+    require_admin(request)
+    target_email = payload.email.lower().strip()
+    reply_content = payload.message.strip()
+    if not target_email or not reply_content:
+        raise HTTPException(status_code=400, detail="Target email and message content are required")
+
+    reply_item = {
+        "id": str(uuid.uuid4()),
+        "sender": "Mithun",
+        "message": reply_content,
+        "timestamp": datetime.now().isoformat(),
+        "time_display": datetime.now().strftime("%I:%M %p")
+    }
+
+    # 1. Enqueue to visitor's active web polling session
+    if target_email not in outbound_replies:
+        outbound_replies[target_email] = []
+    outbound_replies[target_email].append(reply_item)
+
+    # 2. Persist locally to messages.json
+    save_local_message(
+        name="Mithun (via Admin Dashboard)",
+        email=target_email,
+        message=reply_content,
+        direction="outbound",
+        ip="Admin Dashboard",
+        location="Admin Console"
+    )
+
+    # 3. Persist to Firestore chat collection
+    await log_chat(
+        action="reply",
+        email=target_email,
+        name="Mithun",
+        message=reply_content,
+        reply_by=f"@{target_email}",
+        ip="Admin Dashboard",
+        location="Admin Console",
+        user_agent="Admin Dashboard"
+    )
+
+    # 4. Notify Telegram so Mithun's Telegram stays 100% synchronized
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ack_text = (
+        f"💬 *{{chat*\n"
+        f"*action:* reply\n"
+        f"*timestamp:* {now_str}\n"
+        f"*ip:* Admin Dashboard\n"
+        f"*location:* Admin Console\n"
+        f"*messege:* {reply_content}\n"
+        f"*reply by:* @{target_email}*}}*"
+    )
+    await send_telegram_msg(ack_text)
+
+    return {"status": "success", "reply": reply_item}
+
+@app.get("/api/admin/logs")
+async def get_admin_logs(
+    request: Request,
+    action: Optional[str] = "ALL",
+    search: Optional[str] = None,
+    limit: int = 60
+):
+    """Retrieves structured event logs from Firestore for the Admin Logs dashboard."""
+    require_admin(request)
+    limit = max(10, min(limit, 100))
+    logs = []
+
+    if firestore_db:
+        try:
+            query = firestore_db.collection("logs").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(limit)
+            docs = list(query.stream())
+            for doc in docs:
+                d = doc.to_dict()
+                act = d.get("action", "")
+
+                if action and action != "ALL" and act.lower() != action.lower():
+                    continue
+
+                ts = d.get("timestamp")
+                ts_str = "Recent"
+                if hasattr(ts, "strftime"):
+                    ts_str = ts.strftime("%d %b %Y · %H:%M:%S")
+                elif isinstance(ts, (int, float)):
+                    ts_str = datetime.fromtimestamp(ts).strftime("%d %b %Y · %H:%M:%S")
+
+                if search:
+                    s_low = search.lower().strip()
+                    searchable = " ".join([
+                        str(d.get("ip", "")),
+                        str(d.get("location", "")),
+                        str(d.get("city", "")),
+                        str(d.get("region", "")),
+                        str(d.get("country", "")),
+                        str(d.get("isp", "")),
+                        str(d.get("email", "")),
+                        str(d.get("name", "")),
+                        str(d.get("page", "")),
+                        str(act)
+                    ]).lower()
+                    if s_low not in searchable:
+                        continue
+
+                logs.append({
+                    "id": doc.id,
+                    "action": act,
+                    "timestamp": ts_str,
+                    "ip": d.get("ip", "Unknown"),
+                    "location": d.get("location", "Unknown Location"),
+                    "city": d.get("city", ""),
+                    "region": d.get("region", ""),
+                    "country": d.get("country", ""),
+                    "isp": d.get("isp", ""),
+                    "page": d.get("page", "/"),
+                    "email": d.get("email", ""),
+                    "name": d.get("name", ""),
+                    "user_agent": d.get("user_agent", "")
+                })
+        except Exception as e:
+            print(f"[Admin Logs Error]: {e}")
+
+    return {"status": "success", "logs": logs}
 
 @app.get("/api/health")
 async def health_check():

@@ -511,6 +511,22 @@ Memory Footprint: 210MB`,
         }).catch(() => {});
     } catch (e) {}
 
+    // --- TELEMETRY: RESUME DOWNLOAD / VIEW TRACKING ---
+    const downloadResumeBtn = document.getElementById('download-resume-btn');
+    const viewResumeBtn = document.getElementById('view-resume-btn');
+    const trackResumeDownload = () => {
+        try {
+            fetch(getBackendUrl('/api/telemetry/resume'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'resume_download', page: '/#resume' }),
+                keepalive: true
+            }).catch(() => {});
+        } catch (e) {}
+    };
+    if (downloadResumeBtn) downloadResumeBtn.addEventListener('click', trackResumeDownload);
+    if (viewResumeBtn) viewResumeBtn.addEventListener('click', trackResumeDownload);
+
     // 2-Way Chat Live Poller (Fetches Mithun's replies from Telegram)
     let chatPollTimer = null;
     const seenReplyIds = new Set();
@@ -874,8 +890,656 @@ Memory Footprint: 210MB`,
     }
 
     function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
         const div = document.createElement('div');
-        div.textContent = str;
+        div.textContent = String(str);
         return div.innerHTML;
     }
+
+    // ========================================================================
+    // 8. ADMIN DASHBOARD WORKSTATION & TELEMETRY CONTROLLER
+    // ========================================================================
+    const ADMIN_TOKEN_KEY = 'portfolio_admin_token';
+    const footerAdminBtn = document.getElementById('footer-admin-btn');
+    const adminLoginModal = document.getElementById('admin-login-modal');
+    const adminLoginCloseBtn = document.getElementById('admin-login-close-btn');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const adminPasswordInput = document.getElementById('admin-password-input');
+    const adminLoginError = document.getElementById('admin-login-error');
+    const adminSubmitLoginBtn = document.getElementById('admin-submit-login-btn');
+    const adminDashboardOverlay = document.getElementById('admin-dashboard-overlay');
+    const adminPortalCloseBtn = document.getElementById('admin-portal-close-btn');
+    const tabBtnChats = document.getElementById('tab-btn-chats');
+    const tabBtnLogs = document.getElementById('tab-btn-logs');
+    const adminLogoutTrigger = document.getElementById('admin-logout-trigger');
+    const adminChatPanel = document.getElementById('admin-chat-panel');
+    const adminLogsPanel = document.getElementById('admin-logs-panel');
+    const adminChatWorkstation = document.querySelector('.admin-chat-workstation');
+    const adminRefreshConvos = document.getElementById('admin-refresh-convos');
+    const adminSearchVisitors = document.getElementById('admin-search-visitors');
+    const adminConvosList = document.getElementById('admin-convos-list');
+    const adminNoConvoPlaceholder = document.getElementById('admin-no-convo-placeholder');
+    const adminActiveThreadView = document.getElementById('admin-active-thread-view');
+    const adminBackToListBtn = document.getElementById('admin-back-to-list-btn');
+    const activeVisitorName = document.getElementById('active-visitor-name');
+    const activeVisitorStatusBadge = document.getElementById('active-visitor-status-badge');
+    const activeVisitorEmail = document.getElementById('active-visitor-email');
+    const activeVisitorLocation = document.getElementById('active-visitor-location');
+    const adminMessagesTimeline = document.getElementById('admin-messages-timeline');
+    const adminReplyForm = document.getElementById('admin-reply-form');
+    const adminReplyText = document.getElementById('admin-reply-text');
+    const adminReplySendBtn = document.getElementById('admin-reply-send-btn');
+    const adminLogFilterSelect = document.getElementById('admin-log-filter-select');
+    const adminLogSearchInput = document.getElementById('admin-log-search-input');
+    const adminRefreshLogsBtn = document.getElementById('admin-refresh-logs-btn');
+    const adminLogsScrollArea = document.getElementById('admin-logs-scroll-area');
+
+    let currentAdminChatEmail = null;
+    let adminChatsPollTimer = null;
+    let adminThreadPollTimer = null;
+    let cachedConvos = [];
+    let logsSearchDebounceTimer = null;
+
+    function getAdminToken() {
+        return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
+    }
+
+    function setAdminToken(token) {
+        sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+    }
+
+    function clearAdminToken() {
+        sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    }
+
+    function getAdminHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'x-admin-token': getAdminToken()
+        };
+    }
+
+    function handleAdminSessionExpired() {
+        clearAdminToken();
+        closeAdminDashboard();
+        openAdminLoginModal();
+        if (adminLoginError) {
+            adminLoginError.textContent = 'Session expired. Please log in again.';
+            adminLoginError.classList.remove('hidden');
+        }
+    }
+
+    function openAdminLoginModal() {
+        if (!adminLoginModal) return;
+        adminLoginModal.classList.remove('hidden');
+        adminLoginModal.setAttribute('aria-hidden', 'false');
+        if (adminPasswordInput) {
+            adminPasswordInput.value = '';
+            setTimeout(() => adminPasswordInput.focus(), 80);
+        }
+        if (adminLoginError) {
+            adminLoginError.classList.add('hidden');
+        }
+    }
+
+    function closeAdminLoginModal() {
+        if (!adminLoginModal) return;
+        adminLoginModal.classList.add('hidden');
+        adminLoginModal.setAttribute('aria-hidden', 'true');
+        if (adminPasswordInput) adminPasswordInput.value = '';
+        if (adminLoginError) adminLoginError.classList.add('hidden');
+    }
+
+    function openAdminDashboard() {
+        if (!adminDashboardOverlay) return;
+        adminDashboardOverlay.classList.remove('hidden');
+        adminDashboardOverlay.setAttribute('aria-hidden', 'false');
+        switchAdminTab('chat');
+        loadAdminConversations();
+        startAdminChatsPolling();
+    }
+
+    function closeAdminDashboard() {
+        if (!adminDashboardOverlay) return;
+        adminDashboardOverlay.classList.add('hidden');
+        adminDashboardOverlay.setAttribute('aria-hidden', 'true');
+        stopAdminPolling();
+    }
+
+    function startAdminChatsPolling() {
+        stopAdminPolling();
+        adminChatsPollTimer = setInterval(() => {
+            if (adminDashboardOverlay && !adminDashboardOverlay.classList.contains('hidden')) {
+                if (adminChatPanel && !adminChatPanel.classList.contains('hidden')) {
+                    loadAdminConversations(true);
+                }
+            }
+        }, 4000);
+    }
+
+    function startAdminThreadPolling(email) {
+        if (adminThreadPollTimer) clearInterval(adminThreadPollTimer);
+        if (!email) return;
+        adminThreadPollTimer = setInterval(() => {
+            if (currentAdminChatEmail === email && adminDashboardOverlay && !adminDashboardOverlay.classList.contains('hidden')) {
+                loadAdminChatThread(email, true);
+            }
+        }, 2500);
+    }
+
+    function stopAdminPolling() {
+        if (adminChatsPollTimer) {
+            clearInterval(adminChatsPollTimer);
+            adminChatsPollTimer = null;
+        }
+        if (adminThreadPollTimer) {
+            clearInterval(adminThreadPollTimer);
+            adminThreadPollTimer = null;
+        }
+    }
+
+    // Trigger Admin from Footer
+    if (footerAdminBtn) {
+        footerAdminBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const token = getAdminToken();
+            if (token) {
+                try {
+                    const res = await fetch(getBackendUrl('/api/admin/session'), {
+                        headers: { 'x-admin-token': token }
+                    });
+                    if (res.ok) {
+                        openAdminDashboard();
+                        return;
+                    }
+                } catch (err) {}
+            }
+            // If no token or invalid session, open login modal
+            openAdminLoginModal();
+        });
+    }
+
+    // Modal Close
+    if (adminLoginCloseBtn) {
+        adminLoginCloseBtn.addEventListener('click', closeAdminLoginModal);
+    }
+    if (adminLoginModal) {
+        adminLoginModal.addEventListener('click', (e) => {
+            if (e.target === adminLoginModal) closeAdminLoginModal();
+        });
+    }
+
+    // Admin Login Submission
+    if (adminLoginForm) {
+        adminLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = adminPasswordInput ? adminPasswordInput.value.trim() : '';
+            if (!password) return;
+
+            if (adminSubmitLoginBtn) {
+                adminSubmitLoginBtn.disabled = true;
+                adminSubmitLoginBtn.textContent = '[ VERIFYING... ]';
+            }
+            if (adminLoginError) adminLoginError.classList.add('hidden');
+
+            try {
+                const res = await fetch(getBackendUrl('/api/admin/login'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.status === 'success' && data.token) {
+                    setAdminToken(data.token);
+                    closeAdminLoginModal();
+                    openAdminDashboard();
+                } else {
+                    if (adminLoginError) {
+                        adminLoginError.textContent = data.detail || 'Invalid admin credentials. Access denied.';
+                        adminLoginError.classList.remove('hidden');
+                    }
+                    if (adminPasswordInput) {
+                        adminPasswordInput.focus();
+                        adminPasswordInput.select();
+                    }
+                }
+            } catch (err) {
+                if (adminLoginError) {
+                    adminLoginError.textContent = 'Connection error. Please ensure backend is running.';
+                    adminLoginError.classList.remove('hidden');
+                }
+            } finally {
+                if (adminSubmitLoginBtn) {
+                    adminSubmitLoginBtn.disabled = false;
+                    adminSubmitLoginBtn.textContent = '[ LOGIN TO DASHBOARD ]';
+                }
+            }
+        });
+    }
+
+    // Admin Portal Close
+    if (adminPortalCloseBtn) {
+        adminPortalCloseBtn.addEventListener('click', closeAdminDashboard);
+    }
+
+    // Admin Logout
+    if (adminLogoutTrigger) {
+        adminLogoutTrigger.addEventListener('click', async () => {
+            const token = getAdminToken();
+            if (token) {
+                try {
+                    await fetch(getBackendUrl('/api/admin/logout'), {
+                        method: 'POST',
+                        headers: { 'x-admin-token': token }
+                    });
+                } catch (e) {}
+            }
+            clearAdminToken();
+            closeAdminDashboard();
+        });
+    }
+
+    // Admin Tab Navigation
+    function switchAdminTab(tabName) {
+        if (tabName === 'chat') {
+            if (tabBtnChats) tabBtnChats.classList.add('active');
+            if (tabBtnLogs) tabBtnLogs.classList.remove('active');
+            if (adminChatPanel) {
+                adminChatPanel.classList.remove('hidden');
+                adminChatPanel.classList.add('active');
+            }
+            if (adminLogsPanel) {
+                adminLogsPanel.classList.add('hidden');
+                adminLogsPanel.classList.remove('active');
+            }
+        } else if (tabName === 'logs') {
+            if (tabBtnLogs) tabBtnLogs.classList.add('active');
+            if (tabBtnChats) tabBtnChats.classList.remove('active');
+            if (adminLogsPanel) {
+                adminLogsPanel.classList.remove('hidden');
+                adminLogsPanel.classList.add('active');
+            }
+            if (adminChatPanel) {
+                adminChatPanel.classList.add('hidden');
+                adminChatPanel.classList.remove('active');
+            }
+            loadAdminLogs();
+        }
+    }
+
+    if (tabBtnChats) {
+        tabBtnChats.addEventListener('click', () => switchAdminTab('chat'));
+    }
+    if (tabBtnLogs) {
+        tabBtnLogs.addEventListener('click', () => switchAdminTab('logs'));
+    }
+
+    // --- CHATS WORKSTATION LOGIC ---
+    async function loadAdminConversations(silent = false) {
+        if (!getAdminToken()) return;
+        try {
+            const res = await fetch(getBackendUrl('/api/admin/chats'), {
+                headers: getAdminHeaders()
+            });
+
+            if (res.status === 401) {
+                handleAdminSessionExpired();
+                return;
+            }
+
+            if (res.ok) {
+                const data = await res.json();
+                cachedConvos = data.chats || [];
+                renderAdminConversations(cachedConvos);
+            }
+        } catch (err) {
+            if (!silent && adminConvosList) {
+                adminConvosList.innerHTML = `<div class="admin-loading-indicator">Failed to load conversations.</div>`;
+            }
+        }
+    }
+
+    function renderAdminConversations(convos) {
+        if (!adminConvosList) return;
+        const query = (adminSearchVisitors ? adminSearchVisitors.value : '').toLowerCase().trim();
+
+        const filtered = convos.filter(c => {
+            if (!query) return true;
+            return (
+                (c.name && c.name.toLowerCase().includes(query)) ||
+                (c.email && c.email.toLowerCase().includes(query)) ||
+                (c.location && c.location.toLowerCase().includes(query)) ||
+                (c.last_message && c.last_message.toLowerCase().includes(query))
+            );
+        });
+
+        if (filtered.length === 0) {
+            adminConvosList.innerHTML = `<div class="admin-loading-indicator">${query ? 'No conversations matching query.' : 'No visitor conversations recorded yet.'}</div>`;
+            return;
+        }
+
+        adminConvosList.innerHTML = '';
+        filtered.forEach(c => {
+            const item = document.createElement('div');
+            item.className = `admin-convo-item ${currentAdminChatEmail === c.email ? 'active' : ''}`;
+            item.setAttribute('data-email', c.email);
+
+            const isYou = c.last_sender === 'Mithun';
+            const prefix = isYou ? `<span style="color:var(--accent-cyan)">[You]: </span>` : '';
+
+            item.innerHTML = `
+                <div class="convo-top-row">
+                    <div class="convo-user-info">
+                        <span class="convo-status-dot ${c.online ? 'online' : ''}" title="${c.online ? 'Online now' : 'Offline'}"></span>
+                        <span class="convo-user-name">${escapeHtml(c.name || 'Visitor')}</span>
+                    </div>
+                    <span class="convo-time">${escapeHtml(c.last_time_str || '')}</span>
+                </div>
+                <div class="convo-email-row">${escapeHtml(c.email)}</div>
+                <div class="convo-snippet-row">
+                    <span class="convo-last-msg">${prefix}${escapeHtml(c.last_message || 'No messages yet')}</span>
+                    ${c.location ? `<span class="meta-tag" style="font-size:0.68rem;opacity:0.75;white-space:nowrap;">📍 ${escapeHtml(c.location)}</span>` : ''}
+                </div>
+            `;
+
+            item.addEventListener('click', () => {
+                selectAdminChat(c.email);
+            });
+
+            adminConvosList.appendChild(item);
+        });
+    }
+
+    if (adminSearchVisitors) {
+        adminSearchVisitors.addEventListener('input', () => {
+            renderAdminConversations(cachedConvos);
+        });
+    }
+
+    if (adminRefreshConvos) {
+        adminRefreshConvos.addEventListener('click', () => {
+            adminRefreshConvos.style.transform = 'rotate(180deg)';
+            setTimeout(() => { adminRefreshConvos.style.transform = ''; }, 300);
+            loadAdminConversations();
+        });
+    }
+
+    // Select and open chat thread
+    function selectAdminChat(email) {
+        if (!email) return;
+        currentAdminChatEmail = email;
+
+        // Highlight in sidebar
+        const allItems = adminConvosList.querySelectorAll('.admin-convo-item');
+        allItems.forEach(el => {
+            if (el.getAttribute('data-email') === email) {
+                el.classList.add('active');
+            } else {
+                el.classList.remove('active');
+            }
+        });
+
+        if (adminNoConvoPlaceholder) adminNoConvoPlaceholder.classList.add('hidden');
+        if (adminActiveThreadView) adminActiveThreadView.classList.remove('hidden');
+        if (adminChatWorkstation) adminChatWorkstation.classList.add('mobile-show-thread');
+
+        loadAdminChatThread(email);
+        startAdminThreadPolling(email);
+
+        if (adminReplyText) {
+            adminReplyText.focus();
+        }
+    }
+
+    async function loadAdminChatThread(email, silent = false) {
+        if (!email || !getAdminToken()) return;
+        try {
+            const res = await fetch(getBackendUrl(`/api/admin/chat/${encodeURIComponent(email)}`), {
+                headers: getAdminHeaders()
+            });
+
+            if (res.status === 401) {
+                handleAdminSessionExpired();
+                return;
+            }
+
+            if (res.ok) {
+                const data = await res.json();
+                renderAdminThread(data.visitor, data.messages || [], silent);
+            }
+        } catch (err) {
+            if (!silent && adminMessagesTimeline) {
+                adminMessagesTimeline.innerHTML = `<div class="admin-loading-indicator">Failed to load conversation thread.</div>`;
+            }
+        }
+    }
+
+    function renderAdminThread(visitor, messages, silent = false) {
+        // Update header details
+        if (activeVisitorName) activeVisitorName.textContent = visitor.name || 'Visitor';
+        if (activeVisitorEmail) activeVisitorEmail.textContent = visitor.email || currentAdminChatEmail;
+        if (activeVisitorLocation) activeVisitorLocation.textContent = visitor.location || 'Unknown Location';
+        if (activeVisitorStatusBadge) {
+            if (visitor.online) {
+                activeVisitorStatusBadge.className = 'visitor-status-badge online';
+                activeVisitorStatusBadge.textContent = 'ONLINE';
+            } else {
+                activeVisitorStatusBadge.className = 'visitor-status-badge';
+                activeVisitorStatusBadge.textContent = 'OFFLINE';
+            }
+        }
+
+        if (!adminMessagesTimeline) return;
+
+        // Keep scroll position if user scrolled up
+        const isScrolledToBottom = adminMessagesTimeline.scrollHeight - adminMessagesTimeline.clientHeight <= adminMessagesTimeline.scrollTop + 40;
+
+        adminMessagesTimeline.innerHTML = '';
+        if (messages.length === 0) {
+            adminMessagesTimeline.innerHTML = `<div class="admin-loading-indicator">No messages yet with this visitor.</div>`;
+            return;
+        }
+
+        messages.forEach(m => {
+            const row = document.createElement('div');
+            row.className = `admin-bubble-row ${m.is_admin ? 'admin' : 'visitor'}`;
+
+            row.innerHTML = `
+                <div class="admin-bubble-sender">${m.is_admin ? 'Mithun (Admin)' : escapeHtml(m.sender || 'Visitor')}</div>
+                <div class="admin-bubble">
+                    <p>${escapeHtml(m.message)}</p>
+                </div>
+                <div class="admin-bubble-time">${escapeHtml(m.timestamp || '')}</div>
+            `;
+            adminMessagesTimeline.appendChild(row);
+        });
+
+        if (!silent || isScrolledToBottom) {
+            adminMessagesTimeline.scrollTop = adminMessagesTimeline.scrollHeight;
+        }
+    }
+
+    // Mobile Back Button to conversation list
+    if (adminBackToListBtn) {
+        adminBackToListBtn.addEventListener('click', () => {
+            if (adminChatWorkstation) adminChatWorkstation.classList.remove('mobile-show-thread');
+        });
+    }
+
+    // Admin Reply Submission
+    if (adminReplyForm) {
+        adminReplyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = adminReplyText ? adminReplyText.value.trim() : '';
+            if (!message || !currentAdminChatEmail) return;
+
+            // Optimistic render
+            if (adminMessagesTimeline) {
+                const optRow = document.createElement('div');
+                optRow.className = 'admin-bubble-row admin';
+                const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                optRow.innerHTML = `
+                    <div class="admin-bubble-sender">Mithun (Admin)</div>
+                    <div class="admin-bubble">
+                        <p>${escapeHtml(message)}</p>
+                    </div>
+                    <div class="admin-bubble-time">${nowTime}</div>
+                `;
+                adminMessagesTimeline.appendChild(optRow);
+                adminMessagesTimeline.scrollTop = adminMessagesTimeline.scrollHeight;
+            }
+
+            if (adminReplyText) adminReplyText.value = '';
+            if (adminReplySendBtn) adminReplySendBtn.disabled = true;
+
+            try {
+                const res = await fetch(getBackendUrl('/api/admin/chat/reply'), {
+                    method: 'POST',
+                    headers: getAdminHeaders(),
+                    body: JSON.stringify({
+                        email: currentAdminChatEmail,
+                        message: message
+                    })
+                });
+
+                if (res.status === 401) {
+                    handleAdminSessionExpired();
+                    return;
+                }
+
+                if (res.ok) {
+                    // Update cached conversation entry
+                    const idx = cachedConvos.findIndex(c => c.email.toLowerCase() === currentAdminChatEmail.toLowerCase());
+                    if (idx !== -1) {
+                        cachedConvos[idx].last_message = message;
+                        cachedConvos[idx].last_sender = 'Mithun';
+                        cachedConvos[idx].last_time_str = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        renderAdminConversations(cachedConvos);
+                    }
+                    setTimeout(() => loadAdminChatThread(currentAdminChatEmail, true), 500);
+                }
+            } catch (err) {
+                console.error('[Admin Reply Error]:', err);
+            } finally {
+                if (adminReplySendBtn) adminReplySendBtn.disabled = false;
+                if (adminReplyText) adminReplyText.focus();
+            }
+        });
+    }
+
+    // --- LOGS WORKSTATION LOGIC ---
+    async function loadAdminLogs() {
+        if (!adminLogsScrollArea || !getAdminToken()) return;
+        const filter = adminLogFilterSelect ? adminLogFilterSelect.value : 'ALL';
+        const search = adminLogSearchInput ? adminLogSearchInput.value.trim() : '';
+
+        adminLogsScrollArea.innerHTML = `<div class="admin-loading-indicator">Loading activity records from Firestore...</div>`;
+
+        try {
+            const queryParams = new URLSearchParams({
+                action: filter,
+                search: search,
+                limit: '80'
+            });
+
+            const res = await fetch(getBackendUrl(`/api/admin/logs?${queryParams.toString()}`), {
+                headers: getAdminHeaders()
+            });
+
+            if (res.status === 401) {
+                handleAdminSessionExpired();
+                return;
+            }
+
+            if (res.ok) {
+                const data = await res.json();
+                renderAdminLogs(data.logs || []);
+            } else {
+                adminLogsScrollArea.innerHTML = `<div class="admin-loading-indicator">Failed to load event logs.</div>`;
+            }
+        } catch (err) {
+            adminLogsScrollArea.innerHTML = `<div class="admin-loading-indicator">Connection error loading logs.</div>`;
+        }
+    }
+
+    function renderAdminLogs(logs) {
+        if (!adminLogsScrollArea) return;
+        if (logs.length === 0) {
+            adminLogsScrollArea.innerHTML = `<div class="admin-loading-indicator">No activity records found matching criteria.</div>`;
+            return;
+        }
+
+        adminLogsScrollArea.innerHTML = '';
+        logs.forEach(log => {
+            const card = document.createElement('div');
+            card.className = 'admin-log-card';
+
+            const userDetail = log.email ? `
+                <div class="log-detail-item">
+                    <span class="log-detail-label">USER / EMAIL</span>
+                    <span class="log-detail-value">${escapeHtml(log.name ? `${log.name} <${log.email}>` : log.email)}</span>
+                </div>
+            ` : '';
+
+            const ispDetail = log.isp ? `
+                <div class="log-detail-item">
+                    <span class="log-detail-label">ISP / NETWORK</span>
+                    <span class="log-detail-value">${escapeHtml(log.isp)}</span>
+                </div>
+            ` : '';
+
+            card.innerHTML = `
+                <div class="log-card-header">
+                    <span class="log-action-badge ${escapeHtml(log.action)}">${escapeHtml(log.action)}</span>
+                    <span class="log-timestamp">${escapeHtml(log.timestamp)}</span>
+                </div>
+                <div class="log-details-grid">
+                    <div class="log-detail-item">
+                        <span class="log-detail-label">IP ADDRESS</span>
+                        <span class="log-detail-value">${escapeHtml(log.ip || 'Unknown')}</span>
+                    </div>
+                    <div class="log-detail-item">
+                        <span class="log-detail-label">LOCATION</span>
+                        <span class="log-detail-value">${escapeHtml(log.location || 'Unknown Location')}</span>
+                    </div>
+                    ${userDetail}
+                    <div class="log-detail-item">
+                        <span class="log-detail-label">PAGE / PATH</span>
+                        <span class="log-detail-value">${escapeHtml(log.page || '/')}</span>
+                    </div>
+                    ${ispDetail}
+                </div>
+            `;
+            adminLogsScrollArea.appendChild(card);
+        });
+    }
+
+    if (adminLogFilterSelect) {
+        adminLogFilterSelect.addEventListener('change', () => {
+            loadAdminLogs();
+        });
+    }
+
+    if (adminLogSearchInput) {
+        adminLogSearchInput.addEventListener('input', () => {
+            if (logsSearchDebounceTimer) clearTimeout(logsSearchDebounceTimer);
+            logsSearchDebounceTimer = setTimeout(() => {
+                loadAdminLogs();
+            }, 300);
+        });
+        adminLogSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (logsSearchDebounceTimer) clearTimeout(logsSearchDebounceTimer);
+                loadAdminLogs();
+            }
+        });
+    }
+
+    if (adminRefreshLogsBtn) {
+        adminRefreshLogsBtn.addEventListener('click', () => {
+            loadAdminLogs();
+        });
+    }
 });
+

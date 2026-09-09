@@ -9,3 +9,12 @@ backend/.env.*
 backend/messages.json
 __pycache__/
 backend/__pycache__/
+
+# Firebase credentials & Service Accounts
+*firebase*.json
+*service_account*.json
+*service-account*.json
+*credentials*.json
+serviceAccountKey.json
+backend/serviceAccountKey.json
+backend/*firebase*.json
