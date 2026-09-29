@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Mithun | Portfolio 2026</title>
+    <!-- Preload Critical Loading Animation & Styles -->
+    <link rel="preload" as="image" href="res/chibi_jane/walking.webp" type="image/webp" fetchpriority="high">
+    <link rel="preload" as="image" href="res/chibi_jane/welcome/1.png">
     <!-- Google Fonts: Plus Jakarta Sans for UI & JetBrains Mono for Code/Tech -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
 <body>
 
     <!-- =========================================================================
-         1. INITIAL LOADING SCREEN (Walking Jane, 5s minimum, 120ms frame delay)
+         1. INITIAL LOADING SCREEN (Walking Jane, Smooth Progression)
          ========================================================================= -->
     <div id="loading-screen" class="fullscreen-overlay">
         <div class="loader-backdrop-glow"></div>
@@ -28,7 +28,10 @@
             </div>
             
             <div class="jane-loader-stage">
-                <img id="jane-walking" src="res/chibi_jane/walking/1.png" alt="Loading Jane" class="jane-sprite">
+                <picture>
+                    <source srcset="res/chibi_jane/walking.webp" type="image/webp">
+                    <img id="jane-walking" src="res/chibi_jane/walking.gif" alt="Loading Jane" class="jane-sprite" fetchpriority="high">
+                </picture>
             </div>
 
             <div class="progress-container">

@@ -91,13 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.animators.walking.start();
     
     // Smooth 60fps requestAnimationFrame Progress Bar
-    const LOADING_DURATION = 1000; // 1000ms smooth progression
+    const LOADING_DURATION = 1200; // 1200ms smooth progression
     const startTime = performance.now();
 
     function stepProgress(now) {
         const elapsed = now - startTime;
         const progressFraction = Math.min(elapsed / LOADING_DURATION, 1);
-        const percent = Math.round(progressFraction * 100);
+        // Cubic ease-out for natural, satisfying deceleration
+        const eased = 1 - Math.pow(1 - progressFraction, 3);
+        const percent = Math.min(Math.round(eased * 100), 100);
 
         progressBar.style.width = `${percent}%`;
         progressText.textContent = `${percent}%`;
@@ -109,10 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBar.style.width = '100%';
             progressText.textContent = '100%';
             
-            // Brief moment (120ms) so 100% is clearly seen before fading out
+            // Brief moment (100ms) so 100% is clearly seen before fading out
             setTimeout(() => {
                 handleLoadingComplete();
-            }, 120);
+            }, 100);
         }
     }
 

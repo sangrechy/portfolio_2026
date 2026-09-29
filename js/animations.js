@@ -29,6 +29,9 @@ class JaneAnimator {
         for (let i = 1; i <= count; i++) {
             const img = new Image();
             img.src = `${baseUrl}${i}.png`;
+            if (img.decode) {
+                img.decode().catch(() => {});
+            }
             this.cache[baseUrl].push(img);
         }
     }
@@ -86,8 +89,12 @@ class JaneAnimator {
 const animators = {};
 
 function initAnimations() {
-    // 1. Walking (Loading Screen) - 8 frames, 120ms
-    animators.walking = new JaneAnimator('jane-walking', 'res/chibi_jane/walking/', 8, 120, true);
+    // 1. Walking (Loading Screen) - powered natively by animated WebP/GIF for instant 60fps playback
+    animators.walking = {
+        start: () => {},
+        stop: () => {},
+        isPlaying: true
+    };
     
     // 2. Welcome (Intro Bow) - 5 frames, 70ms, plays 1->5 once, total ~350ms + 150ms hold (0.5s total)
     animators.welcome = new JaneAnimator('jane-welcome', 'res/chibi_jane/welcome/', 5, 70, false, () => {
