@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Gallery & Engineering Vault | Mithun</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/projects.css">
+</head>
+<body class="gallery-body">
+
+    <!-- Ambient glowing backgrounds -->
+    <div class="gallery-ambient-glow glow-cyan"></div>
+    <div class="gallery-ambient-glow glow-purple"></div>
+
+    <!-- 1. STICKY TOP NAVIGATION -->
+    <header class="gallery-nav-bar">
+        <div class="gallery-nav-inner">
+            <div class="gallery-brand-wrap">
+                <a href="index.html#projects" class="gallery-back-btn" title="Back to Portfolio Home">
+                    <span>← RETURN TO PORTFOLIO</span>
+                </a>
+                <span class="gallery-brand-title">// PROJECT GALLERY & MEDIA VAULT</span>
+            </div>
+            <div class="gallery-nav-actions">
+                <button type="button" id="gallery-theme-toggle" class="gallery-theme-btn" aria-label="Toggle theme">
+                    <span id="theme-toggle-icon">☀️</span>
+                    <span id="theme-toggle-label">Light</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="gallery-container">
+
+        <!-- 2. HERO HEADER -->
+        <section class="gallery-hero">
+            <span class="gallery-hero-tag">// ARCHIVE & ENGINEERING MEDIA</span>
+            <h1 class="gallery-hero-title">HARDWARE, FIRMWARE & SOFTWARE VAULT</h1>
+            <p class="gallery-hero-subtitle">
+                A complete technical catalog of physical IoT hardware prototypes, printed circuit board designs, edge ML inference rigs, real-time telemetry dashboards, and live video demonstrations.
+            </p>
+            <div class="gallery-stats-bar">
+                <div class="gallery-stat-chip"><strong>5</strong> Featured Projects</div>
+                <div class="gallery-stat-chip"><strong>25+</strong> Photos, Schematics & App Screens</div>
+                <div class="gallery-stat-chip"><strong>2</strong> Live Video Demos & Animations</div>
+                <div class="gallery-stat-chip"><strong>100%</strong> Open-Source Hardware & Code</div>
+            </div>
+        </section>
+
+        <!-- 3. STICKY QUICK JUMP FILTER PILLS -->
+        <nav class="gallery-jump-nav" aria-label="Quick jump between projects">
+            <div class="gallery-jump-track">
+                <a href="#all" class="jump-pill active" data-filter="all">[ ALL PROJECTS ]</a>
+                <a href="#netvision" class="jump-pill" data-filter="netvision">[ 01. NETVISION ]</a>
+                <a href="#vital-monitoring" class="jump-pill" data-filter="vital-monitoring">[ 02. VITAL MONITORING ]</a>
+                <a href="#chargelink" class="jump-pill" data-filter="chargelink">[ 03. CHARGELINK ]</a>
+                <a href="#flood-prediction" class="jump-pill" data-filter="flood-prediction">[ 04. FLOOD PREDICTION ]</a>
+                <a href="#petlink" class="jump-pill" data-filter="petlink">[ 05. PETLINK ROVER ]</a>
+            </div>
+        </nav>
+
+        <!-- =================================================================
+             PROJECT 01: NETVISION
+             ================================================================= -->
+        <section class="project-section-wrapper" id="netvision">
+            <div class="project-header-card">
+                <div class="project-meta-row">
+                    <span class="project-tag-id">// PROJECT 01</span>
+                    <span class="project-badge-pill">FULL STACK & NETWORK SECURITY</span>
+                </div>
+                <h2 class="project-section-title">NetVision — Real-Time Network Traffic & Intelligence Dashboard</h2>
+                <p class="project-section-desc">
+                    A real-time network traffic analysis platform that captures live packet streams via TShark, discovers connected devices, inspects protocols, and resolves host domains using DNS and TLS SNI telemetry with instant Socket.IO dashboard streaming.
+                </p>
+                <div class="project-chips-row">
+                    <span class="tech-tag-chip">React</span>
+                    <span class="tech-tag-chip">Vite</span>
+                    <span class="tech-tag-chip">Tailwind CSS</span>
+                    <span class="tech-tag-chip">Node.js</span>
+                    <span class="tech-tag-chip">Express</span>
+                    <span class="tech-tag-chip">Socket.IO</span>
+                    <span class="tech-tag-chip">TShark</span>
+                    <span class="tech-tag-chip">Python</span>
+                </div>
+                <div class="project-actions-row">
+                    <a href="https://github.com/sangrechy/project_netvision" target="_blank" rel="noopener" class="project-action-btn btn-repo">
+                        <span>[ VIEW GITHUB REPOSITORY ↗ ]</span>
+                    </a>
+                    <a href="index.html#project-1" class="project-action-btn btn-home">
+                        <span>[ Open in Main Portfolio ]</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Media Grid -->
+            <div class="media-grid">
+                <div class="media-card" data-media-type="image" data-src="res/project_images/nv.png" data-title="NetVision Live Dashboard" data-desc="Real-time network traffic streaming interface with protocol distribution, active IP discovery, and bandwidth gauges.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/nv.png" alt="NetVision Live Dashboard" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">DASHBOARD</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Live Traffic & Intelligence Dashboard</div>
+                        <div class="media-caption">Real-time packet visualization, active host resolving, and protocol breakdown.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             PROJECT 02: VITAL MONITORING SYSTEM
+             ================================================================= -->
+        <section class="project-section-wrapper" id="vital-monitoring">
+            <div class="project-header-card">
+                <div class="project-meta-row">
+                    <span class="project-tag-id">// PROJECT 02</span>
+                    <span class="project-badge-pill">EMBEDDED IOT & TINYML</span>
+                </div>
+                <h2 class="project-section-title">Edge AI Wearable Health Monitor (Vital Monitoring System)</h2>
+                <p class="project-section-desc">
+                    An ESP32-S3 wearable biomedical system capturing optical pulse, ECG waveforms, skin temperature, and motion. Features on-edge TinyML inference models for cardiac arrhythmia classification, streaming live telemetry over Bluetooth Low Energy (BLE) to a FastAPI WebSocket dashboard.
+                </p>
+                <div class="project-chips-row">
+                    <span class="tech-tag-chip">ESP32-S3</span>
+                    <span class="tech-tag-chip">TinyML / Edge AI</span>
+                    <span class="tech-tag-chip">BLE GATT</span>
+                    <span class="tech-tag-chip">FastAPI</span>
+                    <span class="tech-tag-chip">WebSockets</span>
+                    <span class="tech-tag-chip">React</span>
+                    <span class="tech-tag-chip">Embedded C++</span>
+                </div>
+                <div class="project-actions-row">
+                    <a href="https://github.com/sangrechy/college_coe_project_vital_monitoring_system" target="_blank" rel="noopener" class="project-action-btn btn-repo">
+                        <span>[ VIEW GITHUB REPOSITORY ↗ ]</span>
+                    </a>
+                    <a href="index.html#project-2" class="project-action-btn btn-home">
+                        <span>[ Open in Main Portfolio ]</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Media Grid -->
+            <div class="media-grid">
+                <!-- Dashboard -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/vm/s1.jpeg" data-title="Vital Monitoring Web Dashboard" data-desc="FastAPI WebSocket dashboard showing real-time heart rate, SpO2, skin temp, and TinyML arrhythmia risk scoring.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/vm/s1.jpeg" alt="Vital Monitoring Web Dashboard" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">WEB DASHBOARD</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Web Telemetry Dashboard</div>
+                        <div class="media-caption">Real-time vitals graphs, anomaly alerts, and WebSocket data streams.</div>
+                    </div>
+                </div>
+
+                <!-- Hardware Prototype 1 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/vm/i1.jpg" data-title="ESP32-S3 Wearable Sensor Prototype" data-desc="Compact breadboard and custom protoboard assembly integrating ESP32-S3 with optical and ECG sensor front-ends.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/vm/i1.jpg" alt="Wearable Sensor Prototype" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">HARDWARE</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">ESP32-S3 Wearable Prototype</div>
+                        <div class="media-caption">Microcontroller module, sensor breakout boards, and power filtering.</div>
+                    </div>
+                </div>
+
+                <!-- Hardware Prototype 2 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/vm/i2.jpg" data-title="Biomedical Electrode & Sensor Rig" data-desc="Bench testing rig with lead attachments for ECG differential capture and temperature sensing.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/vm/i2.jpg" alt="Electrode Rig" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">HARDWARE</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Biomedical Sensor Rig</div>
+                        <div class="media-caption">Electrode harness, analog front-end wiring, and signal conditioning.</div>
+                    </div>
+                </div>
+
+                <!-- Hardware Prototype 3 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/vm/i3.jpg" data-title="Microcontroller Circuit Close-up" data-desc="Close-up view of power distribution, I2C bus lines, and BLE antenna placement.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/vm/i3.jpg" alt="Circuit Close-up" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">CIRCUITRY</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Circuitry Detail</div>
+                        <div class="media-caption">Power rail decoupling and analog signal trace isolation.</div>
+                    </div>
+                </div>
+
+                <!-- UI Screen 1 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/vm/u1.jpeg" data-title="ECG & Heart Rate Monitor UI" data-desc="Mobile application screen rendering live millivolt ECG waveform and instantaneous pulse detection.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/vm/u1.jpeg" alt="ECG UI" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">APP UI</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Live ECG & Pulse Telemetry</div>
+                        <div class="media-caption">Real-time beat-to-beat graphing and signal fidelity metrics.</div>
+                    </div>
+                </div>
+
+                <!-- UI Screen 2 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/vm/u2.jpeg" data-title="Vitals Trend & Anomaly Analytics" data-desc="Hourly health trend visualization with rolling averages and anomaly flags.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/vm/u2.jpeg" alt="Analytics UI" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">APP UI</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Trend Analytics & Stats</div>
+                        <div class="media-caption">Historical physiological patterns and TinyML classification logs.</div>
+                    </div>
+                </div>
+
+                <!-- UI Screen 3 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/vm/u3.jpeg" data-title="Patient Telemetry Logs" data-desc="Session logging with timestamped abnormal event triggers and classification confidences.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/vm/u3.jpeg" alt="Logs UI" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">APP UI</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Health History Stream</div>
+                        <div class="media-caption">Detailed episodic logs and event-triggered alerts.</div>
+                    </div>
+                </div>
+
+                <!-- UI Screen 4 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/vm/u4.jpeg" data-title="Device Status & BLE Link" data-desc="Hardware configuration screen managing Bluetooth pairing, sensor sampling rates, and battery levels.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/vm/u4.jpeg" alt="Device Settings" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">APP UI</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Device Link & Sensor Config</div>
+                        <div class="media-caption">BLE GATT status, calibration offsets, and power consumption modes.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             PROJECT 03: CHARGELINK
+             ================================================================= -->
+        <section class="project-section-wrapper" id="chargelink">
+            <div class="project-header-card">
+                <div class="project-meta-row">
+                    <span class="project-tag-id">// PROJECT 03</span>
+                    <span class="project-badge-pill">POWER ELECTRONICS & TELEMETRY</span>
+                </div>
+                <h2 class="project-section-title">ChargeLink — Smart Bypass Charger & Hardware Telemetry Station</h2>
+                <p class="project-section-desc">
+                    An inline smart power management station designed around ESP32 and INA219 current/voltage sensors to analyze fast-charging handshakes, protect battery health with dynamic relay cutoff thresholds, and stream live telemetry to a custom Flutter mobile app over BLE GATT.
+                </p>
+                <div class="project-chips-row">
+                    <span class="tech-tag-chip">ESP32</span>
+                    <span class="tech-tag-chip">Flutter</span>
+                    <span class="tech-tag-chip">Dart</span>
+                    <span class="tech-tag-chip">BLE GATT</span>
+                    <span class="tech-tag-chip">INA219 Sensor</span>
+                    <span class="tech-tag-chip">Relay Control</span>
+                    <span class="tech-tag-chip">Power Electronics</span>
+                </div>
+                <div class="project-actions-row">
+                    <a href="https://github.com/sangrechy/college_project_charge_link" target="_blank" rel="noopener" class="project-action-btn btn-repo">
+                        <span>[ VIEW GITHUB REPOSITORY ↗ ]</span>
+                    </a>
+                    <a href="index.html#project-3" class="project-action-btn btn-home">
+                        <span>[ Open in Main Portfolio ]</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Media Grid -->
+            <div class="media-grid">
+                <!-- Hardware Unit 1 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/i1.jpg" data-title="ChargeLink Main Hardware Chassis" data-desc="Complete custom enclosure housing ESP32, power shunt sensors, status OLED, and high-amp relays.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/i1.jpg" alt="ChargeLink Hardware" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">HARDWARE</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">ChargeLink Hardware Unit</div>
+                        <div class="media-caption">Integrated smart power box with USB-C/DC input and bypass control.</div>
+                    </div>
+                </div>
+
+                <!-- Hardware Unit 2 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/i2.jpg" data-title="Internal PCB & Wiring Layout" data-desc="Internal architecture showing power routing, snubbers, optocoupled relay triggers, and ESP32 controller.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/i2.jpg" alt="Internal Circuitry" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">CIRCUITRY</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Power Stage & Circuit Layout</div>
+                        <div class="media-caption">High-current bus traces, optocoupled isolation, and logic regulation.</div>
+                    </div>
+                </div>
+
+                <!-- Hardware Unit 3 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/i3.jpg" data-title="Relay Bank & Sensor Rig" data-desc="Detailed view of the dual relay switching stage for overcharge and bypass line management.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/i3.jpg" alt="Relay Array" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">HARDWARE</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Bypass Relay Array</div>
+                        <div class="media-caption">Solid switching mechanics ensuring zero reverse current flow.</div>
+                    </div>
+                </div>
+
+                <!-- Hardware Unit 4 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/i4.jpg" data-title="Bench Testing & Instrumentation" data-desc="Calibration bench using digital multimeters and dummy DC loads for accuracy tuning.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/i4.jpg" alt="Bench Testing" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">TESTBENCH</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Bench Calibration Rig</div>
+                        <div class="media-caption">INA219 ADC calibration and thermal heat dissipation checks.</div>
+                    </div>
+                </div>
+
+                <!-- Hardware Unit 5 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/i5.jpg" data-title="Active Load Charging Test" data-desc="Real device charging stress testing under varying current draw levels.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/i5.jpg" alt="Load Test" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">TESTING</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Active Load Stress Test</div>
+                        <div class="media-caption">Verification of automated cutoff thresholds at 100% state of charge.</div>
+                    </div>
+                </div>
+
+                <!-- App Screen 1 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/u1.jpg" data-title="ChargeLink Flutter Telemetry App" data-desc="Real-time mobile dashboard displaying live charging wattage, bus voltage, current, and battery health state.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/u1.jpg" alt="App Status" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">MOBILE APP</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Real-Time Charging Telemetry</div>
+                        <div class="media-caption">Live wattage, voltage, and current monitoring with instant updates.</div>
+                    </div>
+                </div>
+
+                <!-- App Screen 2 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/u2.jpg" data-title="Charging Curves & Power Delivery" data-desc="Dynamic graph tracking the transition from Constant Current (CC) to Constant Voltage (CV) charging phases.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/u2.jpg" alt="Charging Curves" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">MOBILE APP</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Charging Curve Analytics</div>
+                        <div class="media-caption">Multi-stage power profiling and battery degradation modeling.</div>
+                    </div>
+                </div>
+
+                <!-- App Screen 3 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/u3.jpg" data-title="Thermal & Protection Safeguards" data-desc="Temperature safety thresholds, overvoltage lockouts, and emergency relay disconnect status.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/u3.jpg" alt="Thermal Protection" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">MOBILE APP</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Thermal Safeguards & Health</div>
+                        <div class="media-caption">Configurable temperature limits and cutoff triggers.</div>
+                    </div>
+                </div>
+
+                <!-- App Screen 4 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/cl/u4.jpg" data-title="Session History & Charging Logs" data-desc="Historical charging cycles, total kilowatt-hours delivered, and efficiency logs.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/cl/u4.jpg" alt="Session Logs" class="media-thumb-img contain-fit" loading="lazy">
+                        <span class="media-type-badge">MOBILE APP</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Session Logs & Energy Tracking</div>
+                        <div class="media-caption">Complete audit trail of charge cycles and total energy throughput.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             PROJECT 04: FLOOD PREDICTION SYSTEM
+             ================================================================= -->
+        <section class="project-section-wrapper" id="flood-prediction">
+            <div class="project-header-card">
+                <div class="project-meta-row">
+                    <span class="project-tag-id">// PROJECT 04</span>
+                    <span class="project-badge-pill">IOT SENSORS & MACHINE LEARNING</span>
+                </div>
+                <h2 class="project-section-title">Road-Mounted IoT Flood Monitoring & Prediction System</h2>
+                <p class="project-section-desc">
+                    An autonomous IoT system deployed on roadsides that monitors rainfall and rising water levels via ESP32. Sensor data streams into pre-trained machine learning forecasting models (depth forecast & flood severity classification), broadcasting live predictions and alert notifications to a real-time web portal.
+                </p>
+                <div class="project-chips-row">
+                    <span class="tech-tag-chip">ESP32</span>
+                    <span class="tech-tag-chip">Machine Learning</span>
+                    <span class="tech-tag-chip">Scikit-Learn</span>
+                    <span class="tech-tag-chip">Python</span>
+                    <span class="tech-tag-chip">Node.js</span>
+                    <span class="tech-tag-chip">Express</span>
+                    <span class="tech-tag-chip">Ultrasonic & Rain Sensors</span>
+                </div>
+                <div class="project-actions-row">
+                    <a href="https://github.com/sangrechy/college_project_road_mounted_flood_prediction_system" target="_blank" rel="noopener" class="project-action-btn btn-repo">
+                        <span>[ VIEW GITHUB REPOSITORY ↗ ]</span>
+                    </a>
+                    <a href="index.html#projects" class="project-action-btn btn-home">
+                        <span>[ Back to Portfolio ]</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Media Grid -->
+            <div class="media-grid">
+                <!-- Video Item -->
+                <div class="media-card" data-media-type="video" data-src="res/project_images/fp/v1.mp4" data-title="Flood Prediction Demo Video" data-desc="Complete video walkthrough demonstrating physical sensor simulation, real-time depth calculation, and automated alerts.">
+                    <div class="media-thumb-stage">
+                        <video class="media-video-player" controls preload="metadata" playsinline poster="res/project_images/fp/i1.jpg">
+                            <source src="res/project_images/fp/v1.mp4" type="video/mp4">
+                            Your browser does not support HTML5 video.
+                        </video>
+                        <span class="media-type-badge">DEMO VIDEO</span>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Live Hardware Simulation Walkthrough</div>
+                        <div class="media-caption">Real-time water depth sensing and automated model inference test.</div>
+                    </div>
+                </div>
+
+                <!-- Animated GIF Item -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/fp/g1.gif" data-title="Automated Prediction Flow" data-desc="Interactive sensor feedback cycle and rapid flood alert triggering animation.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/fp/g1.gif" alt="Prediction Flow GIF" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">ANIMATION</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Dynamic Alert Triggering Cycle</div>
+                        <div class="media-caption">Continuous telemetry ingestion and ML threshold classification.</div>
+                    </div>
+                </div>
+
+                <!-- Photo Item -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/fp/i1.jpg" data-title="Roadside Sensor Enclosure Prototype" data-desc="Ruggedized roadside casing protecting the ESP32, power supply, ultrasonic depth transducer, and rain gauge.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/fp/i1.jpg" alt="Flood Sensor Rig" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">HARDWARE</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Physical Sensor Unit Housing</div>
+                        <div class="media-caption">Weatherproof assembly designed for roadside pole mounting.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             PROJECT 05: PETLINK ROVER
+             ================================================================= -->
+        <section class="project-section-wrapper" id="petlink">
+            <div class="project-header-card">
+                <div class="project-meta-row">
+                    <span class="project-tag-id">// PROJECT 05</span>
+                    <span class="project-badge-pill">ROBOTICS & COMPUTER VISION</span>
+                </div>
+                <h2 class="project-section-title">PetLink — AI Companion Robotic Rover</h2>
+                <p class="project-section-desc">
+                    An autonomous robotic pet platform built upon a 4WD chassis with dual ESP32 microcontrollers, a 2-axis Pan/Tilt camera gimbal, and Python web control stream. Designed as an experimental testbed for real-time person tracking, responsive computer vision behaviors, and interactive companion robotics.
+                </p>
+                <div class="project-chips-row">
+                    <span class="tech-tag-chip">Dual ESP32</span>
+                    <span class="tech-tag-chip">4WD Rover Chassis</span>
+                    <span class="tech-tag-chip">Pan/Tilt Gimbal</span>
+                    <span class="tech-tag-chip">Python</span>
+                    <span class="tech-tag-chip">OpenCV</span>
+                    <span class="tech-tag-chip">WebRTC / MJPEG</span>
+                    <span class="tech-tag-chip">Motor Drivers</span>
+                </div>
+                <div class="project-actions-row">
+                    <a href="https://github.com/sangrechy/project_pet_link" target="_blank" rel="noopener" class="project-action-btn btn-repo">
+                        <span>[ VIEW GITHUB REPOSITORY ↗ ]</span>
+                    </a>
+                    <a href="index.html#projects" class="project-action-btn btn-home">
+                        <span>[ Back to Portfolio ]</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Media Grid -->
+            <div class="media-grid">
+                <!-- Video Item -->
+                <div class="media-card" data-media-type="video" data-src="res/project_images/pl/v1.mp4" data-title="PetLink Rover Mobility & Gimbal Demo" data-desc="Live demonstration showing 4WD omni-directional drive testing and 2-axis servo pan/tilt tracking response.">
+                    <div class="media-thumb-stage">
+                        <video class="media-video-player" controls preload="metadata" playsinline poster="res/project_images/pl/i1.jpg">
+                            <source src="res/project_images/pl/v1.mp4" type="video/mp4">
+                            Your browser does not support HTML5 video.
+                        </video>
+                        <span class="media-type-badge">DEMO VIDEO</span>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Rover Mobility & Camera Gimbal Run</div>
+                        <div class="media-caption">4WD motor drive, servo tracking responsiveness, and wireless control.</div>
+                    </div>
+                </div>
+
+                <!-- Animated GIF Item -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/pl/g1.gif" data-title="Pan/Tilt Camera Tracking" data-desc="Real-time camera head articulation driven by the dual ESP32 vision pipeline.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/pl/g1.gif" alt="Rover Gimbal GIF" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">ANIMATION</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Camera Articulation Demo</div>
+                        <div class="media-caption">2-axis servo motion responding to tracking coordinates.</div>
+                    </div>
+                </div>
+
+                <!-- Rover Photo 1 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/pl/i1.jpg" data-title="4WD Rover Hardware Chassis" data-desc="Full overview of the 4WD drive platform, high-torque geared motors, power bank supply, and lower chassis.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/pl/i1.jpg" alt="Rover Chassis" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">HARDWARE</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">4WD Chassis & Motor Array</div>
+                        <div class="media-caption">Integrated power distribution and high-torque DC motor system.</div>
+                    </div>
+                </div>
+
+                <!-- Rover Photo 2 -->
+                <div class="media-card" data-media-type="image" data-src="res/project_images/pl/i2.jpg" data-title="Pan/Tilt Camera & Dual ESP32 Rig" data-desc="Close-up of the upper turret housing the ESP32-CAM module, servo linkages, and control ESP32.">
+                    <div class="media-thumb-stage">
+                        <img src="res/project_images/pl/i2.jpg" alt="Camera Gimbal" class="media-thumb-img" loading="lazy">
+                        <span class="media-type-badge">ELECTRONICS</span>
+                        <div class="media-zoom-overlay"><span class="media-zoom-icon">🔍</span></div>
+                    </div>
+                    <div class="media-info-bar">
+                        <div class="media-title">Dual ESP32 & Camera Gimbal Rig</div>
+                        <div class="media-caption">Independent vision streaming and motor control microcontrollers.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 4. CYBERPUNK LIGHTBOX MODAL -->
+    <div id="gallery-lightbox" class="lightbox-modal" aria-hidden="true" role="dialog" aria-label="Media Preview">
+        <div class="lightbox-header">
+            <span id="lightbox-counter" class="lightbox-counter">Image 1 of 1</span>
+            <button type="button" id="lightbox-close" class="lightbox-close-btn">[ ✕ ESC ]</button>
+        </div>
+        
+        <div class="lightbox-stage">
+            <button type="button" id="lightbox-prev" class="lightbox-arrow arrow-prev" aria-label="Previous image">❮ PREV</button>
+            <div class="lightbox-content-box" id="lightbox-box">
+                <!-- Dynamically populated img or video -->
+            </div>
+            <button type="button" id="lightbox-next" class="lightbox-arrow arrow-next" aria-label="Next image">NEXT ❯</button>
+        </div>
+
+        <div class="lightbox-caption-bar">
+            <div id="lightbox-title" class="lightbox-caption-title">Media Title</div>
+            <div id="lightbox-desc" class="lightbox-caption-desc">Detailed media description</div>
+        </div>
+    </div>
+
+    <!-- Gallery Interaction Script -->
+    <script src="js/projects.js"></script>
+</body>
+</html>

@@ -1047,7 +1047,7 @@ code, pre, .stat-number, .tech-chip, .skill-pill, .badge-tag, .section-tag, .pro
 
 .project-visual-canvas {
     position: relative;
-    min-height: 480px;
+    min-height: 560px;
     display: flex;
     align-items: flex-end;
 }
@@ -1061,6 +1061,37 @@ code, pre, .stat-number, .tech-chip, .skill-pill, .badge-tag, .section-tag, .pro
     justify-content: flex-end;
     overflow: hidden;
     background: #0b0f19;
+    cursor: pointer;
+}
+
+.canvas-image-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 5;
+    background: rgba(10, 15, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.canvas-image-badge:hover {
+    border-color: var(--accent-primary);
+    background: var(--accent-glow);
+    color: #fff;
+    transform: translateY(-2px);
 }
 
 .canvas-project-img {
@@ -1074,6 +1105,10 @@ code, pre, .stat-number, .tech-chip, .skill-pill, .badge-tag, .section-tag, .pro
     z-index: 1;
 }
 
+.canvas-image-layer:hover .canvas-project-img {
+    transform: scale(1.03);
+}
+
 .canvas-project-img.fit-contain {
     object-fit: contain;
     padding: 24px;
@@ -1083,7 +1118,7 @@ code, pre, .stat-number, .tech-chip, .skill-pill, .badge-tag, .section-tag, .pro
 .canvas-image-vignette {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(10, 15, 26, 0.15) 0%, rgba(10, 15, 26, 0.75) 100%);
+    background: linear-gradient(180deg, rgba(10, 15, 26, 0.05) 0%, rgba(10, 15, 26, 0.35) 60%, rgba(10, 15, 26, 0.85) 100%);
     z-index: 2;
     pointer-events: none;
 }
@@ -1117,10 +1152,10 @@ code, pre, .stat-number, .tech-chip, .skill-pill, .badge-tag, .section-tag, .pro
     position: relative;
     z-index: 2;
     width: 100%;
-    padding: 32px;
+    padding: 24px 28px;
     background: var(--bg-glass-strong);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid var(--border-subtle);
 }
 
@@ -2117,10 +2152,16 @@ code, pre, .stat-number, .tech-chip, .skill-pill, .badge-tag, .section-tag, .pro
         position: relative;
         inset: auto;
         width: 100%;
-        height: 220px;
+        height: 270px;
         padding: 0;
         align-items: center;
         justify-content: center;
+    }
+    .canvas-image-badge {
+        top: 12px;
+        left: 12px;
+        padding: 4px 10px;
+        font-size: 0.7rem;
     }
     .canvas-project-img.fit-contain {
         padding: 10px;

@@ -346,15 +346,23 @@
 
                 <!-- 17, 18, 19. PROJECTS SECTION (Large visual + Glass overlay + Gallery) -->
                 <section id="projects" class="section">
-                    <div class="section-header">
-                        <span class="section-tag">// 06. SHOWCASE</span>
-                        <h2 class="section-title">FEATURED PROJECTS</h2>
+                    <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px; margin-bottom: 32px;">
+                        <div class="section-header" style="margin-bottom: 0;">
+                            <span class="section-tag">// 06. SHOWCASE</span>
+                            <h2 class="section-title">FEATURED PROJECTS</h2>
+                        </div>
+                        <a href="projects.html" class="btn btn-outline btn-sm gallery-pill-link" style="border-color: var(--accent-primary); color: var(--text-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                            <span>🖼️ VIEW ALL PROJECT MEDIA & GALLERY ↗</span>
+                        </a>
                     </div>
 
                     <!-- PROJECT 01: NetVision -->
                     <div class="project-showcase-container" id="project-1">
                         <div class="project-visual-canvas">
                             <div class="canvas-image-layer">
+                                <a href="projects.html#netvision" class="canvas-image-badge" title="Open NetVision in Project Gallery">
+                                    <span>🖼️ Open Gallery & Details ↗</span>
+                                </a>
                                 <img src="res/project_images/nv.png" alt="NetVision Live Dashboard" class="canvas-project-img" loading="lazy">
                                 <div class="canvas-image-vignette"></div>
                                 <div class="canvas-code-preview hidden">
@@ -365,7 +373,7 @@
                             <div class="project-glass-overlay">
                                 <div class="project-overlay-header">
                                     <span class="project-index">PROJECT 01</span>
-                                    <h3 class="project-heading">NetVision — Real-Time Network Traffic & Intelligence Dashboard</h3>
+                                    <h3 class="project-heading"><a href="projects.html#netvision" style="color: inherit; text-decoration: none;">NetVision — Real-Time Network Traffic & Intelligence Dashboard</a></h3>
                                 </div>
                                 <p class="project-summary">
                                     A real-time network traffic analysis platform that captures live packet streams via TShark, discovers connected devices, inspects protocols, and resolves host domains using DNS and TLS SNI telemetry with instant Socket.IO dashboard streaming.
@@ -390,6 +398,7 @@
                                 </div>
 
                                 <div class="project-links">
+                                    <a href="projects.html#netvision" class="btn btn-outline btn-sm" style="border-color: var(--accent-secondary); color: var(--accent-secondary);">[ 🖼️ Project Gallery ↗ ]</a>
                                     <a href="https://github.com/sangrechy/project_netvision" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
                                     <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
                                 </div>
@@ -401,6 +410,9 @@
                     <div class="project-showcase-container" id="project-2">
                         <div class="project-visual-canvas">
                             <div class="canvas-image-layer">
+                                <a href="projects.html#vital-monitoring" class="canvas-image-badge" title="Open Vital Monitoring in Project Gallery">
+                                    <span>🖼️ Open Gallery & 8 Photos ↗</span>
+                                </a>
                                 <img src="res/project_images/vm/s1.jpeg" alt="Vital Monitoring Web Dashboard" class="canvas-project-img" loading="lazy">
                                 <div class="canvas-image-vignette"></div>
                                 <div class="canvas-code-preview hidden">
@@ -411,7 +423,7 @@
                             <div class="project-glass-overlay">
                                 <div class="project-overlay-header">
                                     <span class="project-index">PROJECT 02</span>
-                                    <h3 class="project-heading">Edge AI Wearable Health Monitor (Vital Monitoring System)</h3>
+                                    <h3 class="project-heading"><a href="projects.html#vital-monitoring" style="color: inherit; text-decoration: none;">Edge AI Wearable Health Monitor (Vital Monitoring System)</a></h3>
                                 </div>
                                 <p class="project-summary">
                                     An ESP32-S3 wearable biomedical system capturing ECG, optical pulse, skin temperature, and motion. Features on-edge TinyML inference models for cardiac arrhythmia and stress classification, streaming live telemetry over Bluetooth Low Energy (BLE) to a FastAPI WebSocket dashboard.
@@ -435,6 +447,7 @@
                                 </div>
 
                                 <div class="project-links">
+                                    <a href="projects.html#vital-monitoring" class="btn btn-outline btn-sm" style="border-color: var(--accent-secondary); color: var(--accent-secondary);">[ 🖼️ Project Gallery (8 Photos) ↗ ]</a>
                                     <a href="https://github.com/sangrechy/college_coe_project_vital_monitoring_system" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
                                     <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
                                 </div>
@@ -446,6 +459,9 @@
                     <div class="project-showcase-container" id="project-3">
                         <div class="project-visual-canvas">
                             <div class="canvas-image-layer">
+                                <a href="projects.html#chargelink" class="canvas-image-badge" title="Open ChargeLink in Project Gallery">
+                                    <span>🖼️ Open Gallery & 9 Photos ↗</span>
+                                </a>
                                 <img src="res/project_images/cl/i1.jpg" alt="ChargeLink Smart Charger Unit" class="canvas-project-img" loading="lazy">
                                 <div class="canvas-image-vignette"></div>
                                 <div class="canvas-code-preview hidden">
@@ -456,7 +472,7 @@
                             <div class="project-glass-overlay">
                                 <div class="project-overlay-header">
                                     <span class="project-index">PROJECT 03</span>
-                                    <h3 class="project-heading">ChargeLink — Smart Bypass Charger & Hardware Telemetry Station</h3>
+                                    <h3 class="project-heading"><a href="projects.html#chargelink" style="color: inherit; text-decoration: none;">ChargeLink — Smart Bypass Charger & Hardware Telemetry Station</a></h3>
                                 </div>
                                 <p class="project-summary">
                                     An inline smart power management box designed around ESP32 and INA219 current/voltage sensors to analyze fast-charging handshakes, negotiate optimal cross-brand power delivery profiles, protect battery health with relay cutoff thresholds, and stream live telemetry to a custom Flutter mobile app over BLE GATT.
@@ -480,10 +496,26 @@
                                 </div>
 
                                 <div class="project-links">
+                                    <a href="projects.html#chargelink" class="btn btn-outline btn-sm" style="border-color: var(--accent-secondary); color: var(--accent-secondary);">[ 🖼️ Project Gallery (9 Photos) ↗ ]</a>
                                     <a href="https://github.com/sangrechy/college_project_charge_link" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
                                     <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Projects Banner -->
+                    <div class="glass-panel" style="margin-top: 24px; padding: 24px; border: 1px dashed var(--border-medium); text-align: center; border-radius: 16px;">
+                        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 1rem; margin-bottom: 8px; color: var(--text-primary);">
+                            + 2 MORE HARDWARE &amp; AI RESEARCH PROJECTS IN VAULT
+                        </h4>
+                        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px;">
+                            Explore Road-Mounted IoT Flood Prediction System (ML models + simulation video) &amp; PetLink AI Autonomous Rover (4WD + dual ESP32 vision gimbal).
+                        </p>
+                        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                            <a href="projects.html#flood-prediction" class="btn btn-outline btn-sm">[ 04. Flood Prediction System ↗ ]</a>
+                            <a href="projects.html#petlink" class="btn btn-outline btn-sm">[ 05. PetLink Companion Rover ↗ ]</a>
+                            <a href="projects.html" class="btn btn-primary btn-sm">[ 🖼️ Explore Full Media Gallery ↗ ]</a>
                         </div>
                     </div>
 

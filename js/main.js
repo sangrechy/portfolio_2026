@@ -456,6 +456,25 @@ function extractHostIntelligence(packet) {
         });
     });
 
+    // Direct canvas image click redirects to that project's section in projects.html
+    const projAnchors = {
+        'project-1': 'netvision',
+        'project-2': 'vital-monitoring',
+        'project-3': 'chargelink'
+    };
+    document.querySelectorAll('.project-showcase-container').forEach(container => {
+        const canvas = container.querySelector('.canvas-image-layer');
+        if (canvas) {
+            canvas.addEventListener('click', (e) => {
+                if (e.target.closest('.canvas-code-preview') || e.target.closest('.canvas-image-badge')) return;
+                const anchor = projAnchors[container.id];
+                if (anchor) {
+                    window.location.href = `projects.html#${anchor}`;
+                }
+            });
+        }
+    });
+
     // ========================================================================
     // 7. CHAT UI MODAL & FASTAPI / TELEGRAM BRIDGE
     // ========================================================================
