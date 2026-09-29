@@ -351,143 +351,136 @@
                         <h2 class="section-title">FEATURED PROJECTS</h2>
                     </div>
 
-                    <!-- PROJECT 01 -->
+                    <!-- PROJECT 01: NetVision -->
                     <div class="project-showcase-container" id="project-1">
                         <div class="project-visual-canvas">
-                            <div class="canvas-image-layer" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);">
-                                <div class="canvas-code-preview">
-                                    <pre><code>// AI Automation & Telegram Bot Orchestrator
-class AutonomousAgentDispatcher:
-    def __init__(self, api_key: str):
-        self.router = APIRouter(prefix="/api/agent")
-        self.event_bus = EventBus()
-        
-    async def dispatch(self, payload: AgentPayload) -> TaskResult:
-        telegram_worker.notify(f"Dispatched task: {payload.name}")
-        return await engine.execute(payload)</code></pre>
+                            <div class="canvas-image-layer">
+                                <img src="res/project_images/nv.png" alt="NetVision Live Dashboard" class="canvas-project-img" loading="lazy">
+                                <div class="canvas-image-vignette"></div>
+                                <div class="canvas-code-preview hidden">
+                                    <pre><code></code></pre>
                                 </div>
                             </div>
                             <!-- 18. Glass Overlay Panel -->
                             <div class="project-glass-overlay">
                                 <div class="project-overlay-header">
                                     <span class="project-index">PROJECT 01</span>
-                                    <h3 class="project-heading">Autonomous Workflow & Telegram Bot Engine</h3>
+                                    <h3 class="project-heading">NetVision — Real-Time Network Traffic & Intelligence Dashboard</h3>
                                 </div>
                                 <p class="project-summary">
-                                    A distributed task automation service built with FastAPI that ingests webhook events, analyzes telemetry, and dispatches instant real-time alerts to Telegram bots with zero latency.
+                                    A real-time network traffic analysis platform that captures live packet streams via TShark, discovers connected devices, inspects protocols, and resolves host domains using DNS and TLS SNI telemetry with instant Socket.IO dashboard streaming.
                                 </p>
                                 <div class="project-tech-chips">
+                                    <span class="tech-chip">React</span>
+                                    <span class="tech-chip">Vite</span>
+                                    <span class="tech-chip">Tailwind CSS</span>
+                                    <span class="tech-chip">Node.js</span>
+                                    <span class="tech-chip">Express</span>
+                                    <span class="tech-chip">Socket.IO</span>
+                                    <span class="tech-chip">TShark</span>
                                     <span class="tech-chip">Python</span>
-                                    <span class="tech-chip">FastAPI</span>
-                                    <span class="tech-chip">Telegram API</span>
-                                    <span class="tech-chip">Docker</span>
                                 </div>
                                 
                                 <!-- 19. Gallery Thumbnails -->
                                 <div class="project-gallery-controls">
                                     <span class="gallery-label">PREVIEW VIEWS:</span>
-                                    <button type="button" class="gallery-thumb-btn active" data-proj="1" data-view="1">[ 1. ARCHITECTURE ]</button>
-                                    <button type="button" class="gallery-thumb-btn" data-proj="1" data-view="2">[ 2. TELEGRAM BOT ]</button>
-                                    <button type="button" class="gallery-thumb-btn" data-proj="1" data-view="3">[ 3. API METRICS ]</button>
+                                    <button type="button" class="gallery-thumb-btn active" data-proj="1" data-view="1">[ 1. LIVE DASHBOARD ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="1" data-view="2">[ 2. TSHARK PIPELINE ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="1" data-view="3">[ 3. PROTOCOL INTEL ]</button>
                                 </div>
 
                                 <div class="project-links">
-                                    <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
+                                    <a href="https://github.com/sangrechy/project_netvision" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
                                     <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- PROJECT 02 -->
+                    <!-- PROJECT 02: Vital Monitoring System -->
                     <div class="project-showcase-container" id="project-2">
                         <div class="project-visual-canvas">
-                            <div class="canvas-image-layer" style="background: linear-gradient(135deg, #022c22 0%, #064e3b 100%);">
-                                <div class="canvas-code-preview">
-                                    <pre><code>// Realtime Analytics & Telemetry Dashboard
-const DashboardStream = () => {
-    const [metrics, setMetrics] = useState&lt;MetricData[]&gt;([]);
-    useWebSocket("wss://telemetry.mithun.dev", {
-        onMessage: (evt) => updateHeatmap(JSON.parse(evt.data))
-    });
-    return &lt;InteractiveHeatmap data={metrics} /&gt;;
-};</code></pre>
+                            <div class="canvas-image-layer">
+                                <img src="res/project_images/vm/s1.jpeg" alt="Vital Monitoring Web Dashboard" class="canvas-project-img" loading="lazy">
+                                <div class="canvas-image-vignette"></div>
+                                <div class="canvas-code-preview hidden">
+                                    <pre><code></code></pre>
                                 </div>
                             </div>
                             <!-- 18. Glass Overlay Panel -->
                             <div class="project-glass-overlay">
                                 <div class="project-overlay-header">
                                     <span class="project-index">PROJECT 02</span>
-                                    <h3 class="project-heading">Full-Stack Cloud Telemetry Platform</h3>
+                                    <h3 class="project-heading">Edge AI Wearable Health Monitor (Vital Monitoring System)</h3>
                                 </div>
                                 <p class="project-summary">
-                                    Full-stack monitoring system offering real-time streaming charts, container metrics aggregation, and incident triage with sub-second WebSocket updates and historical PostgreSQL audit trails.
+                                    An ESP32-S3 wearable biomedical system capturing ECG, optical pulse, skin temperature, and motion. Features on-edge TinyML inference models for cardiac arrhythmia and stress classification, streaming live telemetry over Bluetooth Low Energy (BLE) to a FastAPI WebSocket dashboard.
                                 </p>
                                 <div class="project-tech-chips">
-                                    <span class="tech-chip">React</span>
-                                    <span class="tech-chip">TypeScript</span>
+                                    <span class="tech-chip">ESP32-S3</span>
+                                    <span class="tech-chip">TinyML / Edge AI</span>
+                                    <span class="tech-chip">BLE</span>
                                     <span class="tech-chip">FastAPI</span>
-                                    <span class="tech-chip">PostgreSQL</span>
-                                    <span class="tech-chip">Redis</span>
+                                    <span class="tech-chip">WebSockets</span>
+                                    <span class="tech-chip">React</span>
+                                    <span class="tech-chip">Embedded C++</span>
                                 </div>
 
                                 <!-- 19. Gallery Thumbnails -->
                                 <div class="project-gallery-controls">
                                     <span class="gallery-label">PREVIEW VIEWS:</span>
-                                    <button type="button" class="gallery-thumb-btn active" data-proj="2" data-view="1">[ 1. OVERVIEW ]</button>
-                                    <button type="button" class="gallery-thumb-btn" data-proj="2" data-view="2">[ 2. CLOUD TRACE ]</button>
-                                    <button type="button" class="gallery-thumb-btn" data-proj="2" data-view="3">[ 3. BENCHMARKS ]</button>
+                                    <button type="button" class="gallery-thumb-btn active" data-proj="2" data-view="1">[ 1. WEB DASHBOARD ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="2" data-view="2">[ 2. HARDWARE PROTO ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="2" data-view="3">[ 3. REALTIME VITALS ]</button>
                                 </div>
 
                                 <div class="project-links">
-                                    <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
+                                    <a href="https://github.com/sangrechy/college_coe_project_vital_monitoring_system" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
                                     <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- PROJECT 03 -->
+                    <!-- PROJECT 03: ChargeLink -->
                     <div class="project-showcase-container" id="project-3">
                         <div class="project-visual-canvas">
-                            <div class="canvas-image-layer" style="background: linear-gradient(135deg, #311042 0%, #1e1b4b 100%);">
-                                <div class="canvas-code-preview">
-                                    <pre><code>// High-Concurrency Distributed Chat Server
-class ChatHub:
-    def __init__(self):
-        self.active_conns: list[WebSocket] = []
-        self.redis_client = aioredis.from_url("redis://localhost:6379")
-        
-    async def broadcast(self, channel: str, msg: dict):
-        await self.redis_client.publish(channel, json.dumps(msg))</code></pre>
+                            <div class="canvas-image-layer">
+                                <img src="res/project_images/cl/i1.jpg" alt="ChargeLink Smart Charger Unit" class="canvas-project-img" loading="lazy">
+                                <div class="canvas-image-vignette"></div>
+                                <div class="canvas-code-preview hidden">
+                                    <pre><code></code></pre>
                                 </div>
                             </div>
                             <!-- 18. Glass Overlay Panel -->
                             <div class="project-glass-overlay">
                                 <div class="project-overlay-header">
                                     <span class="project-index">PROJECT 03</span>
-                                    <h3 class="project-heading">Distributed High-Throughput Chat Engine</h3>
+                                    <h3 class="project-heading">ChargeLink — Smart Bypass Charger & Hardware Telemetry Station</h3>
                                 </div>
                                 <p class="project-summary">
-                                    Fault-tolerant messaging protocol handler featuring room multiplexing, end-to-end payload validation, message buffering, and seamless horizontal scaling with Redis Pub/Sub backbones.
+                                    An inline smart power management box designed around ESP32 and INA219 current/voltage sensors to analyze fast-charging handshakes, negotiate optimal cross-brand power delivery profiles, protect battery health with relay cutoff thresholds, and stream live telemetry to a custom Flutter mobile app over BLE GATT.
                                 </p>
                                 <div class="project-tech-chips">
-                                    <span class="tech-chip">Python</span>
-                                    <span class="tech-chip">WebSockets</span>
-                                    <span class="tech-chip">Redis Pub/Sub</span>
-                                    <span class="tech-chip">Docker Compose</span>
+                                    <span class="tech-chip">ESP32</span>
+                                    <span class="tech-chip">Flutter</span>
+                                    <span class="tech-chip">Dart</span>
+                                    <span class="tech-chip">BLE GATT</span>
+                                    <span class="tech-chip">INA219 Sensor</span>
+                                    <span class="tech-chip">Power Electronics</span>
+                                    <span class="tech-chip">C++</span>
                                 </div>
 
                                 <!-- 19. Gallery Thumbnails -->
                                 <div class="project-gallery-controls">
                                     <span class="gallery-label">PREVIEW VIEWS:</span>
-                                    <button type="button" class="gallery-thumb-btn active" data-proj="3" data-view="1">[ 1. TOPOLOGY ]</button>
-                                    <button type="button" class="gallery-thumb-btn" data-proj="3" data-view="2">[ 2. STREAM ]</button>
-                                    <button type="button" class="gallery-thumb-btn" data-proj="3" data-view="3">[ 3. LOAD TEST ]</button>
+                                    <button type="button" class="gallery-thumb-btn active" data-proj="3" data-view="1">[ 1. HARDWARE UNIT ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="3" data-view="2">[ 2. FLUTTER APP UI ]</button>
+                                    <button type="button" class="gallery-thumb-btn" data-proj="3" data-view="3">[ 3. POWER TELEMETRY ]</button>
                                 </div>
 
                                 <div class="project-links">
-                                    <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
+                                    <a href="https://github.com/sangrechy/college_project_charge_link" target="_blank" rel="noopener" class="btn btn-outline btn-sm">[ GitHub ]</a>
                                     <button type="button" class="btn btn-primary btn-sm open-chat-trigger">[ Inquire in Chat ]</button>
                                 </div>
                             </div>

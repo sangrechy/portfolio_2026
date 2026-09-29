@@ -322,95 +322,94 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================================
     const galleryButtons = document.querySelectorAll('.gallery-thumb-btn');
     
-    // Sample views data for each project
+    // Real views data for each project
     const projectViews = {
         '1': {
             '1': {
-                code: `// AI Automation & Telegram Bot Orchestrator
-class AutonomousAgentDispatcher:
-    def __init__(self, api_key: str):
-        self.router = APIRouter(prefix="/api/agent")
-        self.event_bus = EventBus()
-        
-    async def dispatch(self, payload: AgentPayload) -> TaskResult:
-        telegram_worker.notify(f"Dispatched task: {payload.name}")
-        return await engine.execute(payload)`,
-                bg: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)'
+                type: 'image',
+                img: 'res/project_images/nv.png',
+                alt: 'NetVision Live Dashboard',
+                fit: 'cover',
+                bg: '#0f172a'
             },
             '2': {
-                code: `// Telegram Instant Bot Webhook Handler
-async def handle_telegram_webhook(update: TelegramUpdate):
-    chat_id = update.message.chat.id
-    user_text = update.message.text
-    
-    analysis = await ai_engine.analyze(user_text)
-    await bot.send_message(chat_id, text=analysis.summary)`,
-                bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
+                type: 'code',
+                code: `// TShark Live Packet Capture & Protocol Analyzer
+const capture = spawn('tshark', [
+    '-i', selectedInterface,
+    '-l', '-n', '-T', 'ek',
+    '-e', 'frame.time_epoch',
+    '-e', 'ip.src', '-e', 'ip.dst',
+    '-e', '_ws.col.Protocol',
+    '-e', 'dns.qry.name',
+    '-e', 'tls.handshake.extensions_server_name'
+]);
+
+capture.stdout.on('data', (chunk) => {
+    const packet = parseTSharkJSON(chunk);
+    io.emit('packet:stream', packet);
+});`,
+                bg: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)'
             },
             '3': {
-                code: `// High-Performance Task Metrics
-{
-    "uptime": "99.98%",
-    "avg_latency_ms": 14.2,
-    "telegram_dispatch_latency": "120ms",
-    "active_agents": 8
+                type: 'code',
+                code: `// Domain Intelligence & Protocol Identification
+function extractHostIntelligence(packet) {
+    if (packet.tls_sni) {
+        return { domain: packet.tls_sni, proto: 'HTTPS/TLS' };
+    }
+    if (packet.dns_query) {
+        return { domain: packet.dns_query, proto: 'DNS' };
+    }
+    return { ip: packet.dst_ip, proto: packet.protocol };
 }`,
-                bg: 'linear-gradient(135deg, #172554 0%, #0f172a 100%)'
+                bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
             }
         },
         '2': {
             '1': {
-                code: `// Realtime Cloud Telemetry Dashboard
-const DashboardStream = () => {
-    const [metrics, setMetrics] = useState<MetricData[]>([]);
-    useWebSocket("wss://telemetry.mithun.dev", {
-        onMessage: (evt) => updateHeatmap(JSON.parse(evt.data))
-    });
-    return <InteractiveHeatmap data={metrics} />;
-};`,
-                bg: 'linear-gradient(135deg, #022c22 0%, #064e3b 100%)'
+                type: 'image',
+                img: 'res/project_images/vm/s1.jpeg',
+                alt: 'Vital Monitoring Web Dashboard',
+                fit: 'cover',
+                bg: '#064e3b'
             },
             '2': {
-                code: `// Distributed Cloud Trace Exporter
-func ExportTraceSpan(ctx context.Context, span *TraceSpan) error {
-    payload := serialize(span)
-    return kafkaProducer.Send("traces.telemetry", payload)
-}`,
-                bg: 'linear-gradient(135deg, #042f2e 0%, #134e4a 100%)'
+                type: 'image',
+                img: 'res/project_images/vm/i1.jpg',
+                alt: 'ESP32-S3 Wearable Sensor Integration',
+                fit: 'contain',
+                bg: '#022c22'
             },
             '3': {
-                code: `// Benchmark Throughput
-BenchmarkTelemetryIngest-8   5000000   240 ns/op
-Heap allocations: 0 allocs/op
-GC Pause time: < 0.2ms`,
-                bg: 'linear-gradient(135deg, #064e3b 0%, #022c22 100%)'
+                type: 'image',
+                img: 'res/project_images/vm/u1.jpeg',
+                alt: 'Real-Time ECG & Optical Pulse Telemetry',
+                fit: 'cover',
+                bg: '#064e3b'
             }
         },
         '3': {
             '1': {
-                code: `// High-Concurrency Distributed Chat Server
-class ChatHub:
-    def __init__(self):
-        self.active_conns: list[WebSocket] = []
-        self.redis_client = aioredis.from_url("redis://localhost:6379")
-        
-    async def broadcast(self, channel: str, msg: dict):
-        await self.redis_client.publish(channel, json.dumps(msg))`,
-                bg: 'linear-gradient(135deg, #311042 0%, #1e1b4b 100%)'
+                type: 'image',
+                img: 'res/project_images/cl/i1.jpg',
+                alt: 'ChargeLink Smart Bypass Charger Unit',
+                fit: 'cover',
+                bg: '#1e1b4b'
             },
             '2': {
-                code: `// Redis Pub/Sub Stream Consumer
-async def listen_redis_stream(hub: ChatHub):
-    async for message in hub.redis_client.channel_reader("chat"):
-        await hub.dispatch_to_clients(message.data)`,
-                bg: 'linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%)'
+                type: 'image',
+                img: 'res/project_images/cl/u1.jpg',
+                alt: 'ChargeLink Flutter Telemetry Mobile App',
+                fit: 'contain',
+                bg: '#0a0f1a'
             },
             '3': {
-                code: `// WebSocket Stress Benchmark (50,000 Concurrent Users)
-Success Rate: 100%
-p99 Delivery: 8ms
-Memory Footprint: 210MB`,
-                bg: 'linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)'
+                type: 'image',
+                img: 'res/project_images/cl/u2.jpg',
+                alt: 'Charging Curve & Power Profiles',
+                fit: 'contain',
+                bg: '#0a0f1a'
             }
         }
     };
@@ -426,14 +425,33 @@ Memory Footprint: 210MB`,
             container.querySelectorAll('.gallery-thumb-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Update visual preview
+            // Elements
             const canvasLayer = container.querySelector('.canvas-image-layer');
+            const projectImg = container.querySelector('.canvas-project-img');
+            const codePreview = container.querySelector('.canvas-code-preview');
             const codeBlock = container.querySelector('.canvas-code-preview code');
-            
+
             if (projectViews[projId] && projectViews[projId][viewId]) {
                 const viewData = projectViews[projId][viewId];
-                if (canvasLayer) canvasLayer.style.background = viewData.bg;
-                if (codeBlock) codeBlock.textContent = viewData.code;
+                if (canvasLayer && viewData.bg) canvasLayer.style.background = viewData.bg;
+
+                if (viewData.type === 'image') {
+                    if (projectImg) {
+                        projectImg.src = viewData.img;
+                        projectImg.alt = viewData.alt || 'Project Preview';
+                        if (viewData.fit === 'contain') {
+                            projectImg.classList.add('fit-contain');
+                        } else {
+                            projectImg.classList.remove('fit-contain');
+                        }
+                        projectImg.classList.remove('hidden');
+                    }
+                    if (codePreview) codePreview.classList.add('hidden');
+                } else if (viewData.type === 'code') {
+                    if (codeBlock) codeBlock.textContent = viewData.code;
+                    if (codePreview) codePreview.classList.remove('hidden');
+                    if (projectImg) projectImg.classList.add('hidden');
+                }
             }
         });
     });
