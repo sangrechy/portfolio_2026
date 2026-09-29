@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mithun | Portfolio 2026</title>
-    <!-- Preload Critical Loading Animation & Styles -->
+    <!-- Preload Critical Loading & Welcome Animations -->
     <link rel="preload" as="image" href="res/chibi_jane/walking.webp" type="image/webp" fetchpriority="high">
-    <link rel="preload" as="image" href="res/chibi_jane/welcome/1.png">
+    <link rel="preload" as="image" href="res/chibi_jane/walking.gif">
+    <link rel="preload" as="image" href="res/chibi_jane/welcome.webp" type="image/webp">
+    <link rel="preload" as="image" href="res/chibi_jane/welcome.gif">
     <!-- Google Fonts: Plus Jakarta Sans for UI & JetBrains Mono for Code/Tech -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,7 +54,10 @@
     <div id="welcome-screen" class="fullscreen-overlay hidden">
         <div class="welcome-container glass-card">
             <div class="jane-welcome-stage">
-                <img id="jane-welcome" src="res/chibi_jane/welcome/1.png" alt="Welcome Jane" class="jane-sprite">
+                <picture>
+                    <source srcset="res/chibi_jane/welcome.webp" type="image/webp">
+                    <img id="jane-welcome" src="res/chibi_jane/welcome.gif" alt="Welcome Jane" class="jane-sprite">
+                </picture>
             </div>
             <div class="welcome-text-wrap">
                 <h2 id="welcome-text" class="welcome-english hidden-text">Welcome!</h2>

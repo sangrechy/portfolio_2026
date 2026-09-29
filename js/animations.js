@@ -96,10 +96,25 @@ function initAnimations() {
         isPlaying: true
     };
     
-    // 2. Welcome (Intro Bow) - 5 frames, 70ms, plays 1->5 once, total ~350ms + 150ms hold (0.5s total)
-    animators.welcome = new JaneAnimator('jane-welcome', 'res/chibi_jane/welcome/', 5, 70, false, () => {
-        document.dispatchEvent(new Event('welcomeComplete'));
-    });
+    // 2. Welcome (Intro Bow) - smooth native animation trigger
+    animators.welcome = {
+        start: () => {
+            const welcomeStage = document.querySelector('.jane-welcome-stage');
+            if (welcomeStage) {
+                welcomeStage.innerHTML = `
+                    <picture>
+                        <source srcset="res/chibi_jane/welcome.webp" type="image/webp">
+                        <img id="jane-welcome" src="res/chibi_jane/welcome.gif" alt="Welcome Jane" class="jane-sprite">
+                    </picture>
+                `;
+            }
+            setTimeout(() => {
+                document.dispatchEvent(new Event('welcomeComplete'));
+            }, 1050);
+        },
+        stop: () => {},
+        isPlaying: false
+    };
     
     // 3. Bike (Scroll journey) - Preload BOTH bike_front (downward) and bike_back (upward)
     animators.bike = new JaneAnimator('jane-bike', 'res/chibi_jane/bike_front/', 8, 110, true);
